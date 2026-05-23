@@ -6,12 +6,13 @@
 
 | 项目 | 文件 | 说明 |
 | --- | --- | --- |
+| AI项目 | `[1.1_Smartlex的Github地址.txt](https://github.com/Quinn2025-bb/smartlex)` | 相关 GitHub 地址说明 |
 | Dify + 飞书知识库答疑助手 | `1.2_Dify飞书知识库答疑助手_项目总结final.html` | 项目总结、方案说明与成果展示 |
 | 蝉妈妈数据看板 | `1.3_蝉妈妈数据看板_项目总结final.html` | 数据看板项目总结与展示材料 |
 | 重庆邮电大学英语学习指南 / 行业认知手册 | `2.1_完成封面、前言、3-5章_重庆邮电大学大学英语学习指南（文内有跳转链接）.pdf`<br>`2.2_完成前言和第4章_重庆邮电大学外国语学院学生行业认知手册.pdf` | 教材/手册类内容整理与编写成果 |
 | 优译杯项目 | `3.1_优译杯_赛题资料.pdf`<br>`3.2_优译杯_作品.pdf`<br>`3.3_优译杯_设计思路展示.pptx` | 赛题分析、作品输出与设计思路展示 |
 | Content4C 新西兰公司研究 | `4.1_Content4C新西兰公司McDonald.pdf`<br>`4.2_Content4C新西兰公司McDonald FAQs.pdf`<br>`4.3_Content4C新西兰公司DesignProduction.pdf`<br>`4.4_Content4C新西兰公司Sculptureum.pdf`<br>`4.5_Content4C项目网站.txt` | 企业研究、资料整理与项目链接 |
-| 相关链接 | `1.1_Smartlex的Github地址.txt` | 相关 GitHub 地址说明 |
+
 
 ## 个人能力覆盖
 
