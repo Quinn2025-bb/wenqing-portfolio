@@ -1,0 +1,3842 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蝉妈妈数据周报看板</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --paper: #ffffff;
+      --ink: #17242d;
+      --muted: #5d6b75;
+      --subtle: #7b8790;
+      --line: #dce3e8;
+      --line-strong: #c5d0d8;
+      --blue: #2e5f86;
+      --green: #3d7567;
+      --gold: #9a6f2c;
+      --rose: #9b5558;
+      --slate: #24333f;
+      --soft-blue: #e8f1f7;
+      --soft-green: #e9f4ef;
+      --soft-gold: #fff3d9;
+      --soft-rose: #f8e7e8;
+      --shadow: 0 14px 34px rgba(23, 36, 45, 0.09);
+      --shadow-hover: 0 18px 44px rgba(23, 36, 45, 0.15);
+      --radius: 8px;
+      --nav-h: 68px;
+      --sidebar-w: 292px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      line-height: 1.72;
+      letter-spacing: 0;
+      padding-left: var(--sidebar-w);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 80;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--green), var(--gold));
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 18px;
+      width: var(--sidebar-w);
+      padding: 24px 18px 22px;
+      border-right: 1px solid rgba(220, 227, 232, 0.95);
+      border-bottom: 0;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(14px);
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand strong {
+      color: var(--slate);
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .brand span {
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    nav {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    nav a {
+      display: block;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: #34404a;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+      box-shadow: 0 6px 16px rgba(23, 36, 45, 0.04);
+      transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      white-space: normal;
+    }
+
+    nav a:hover {
+      border-color: #aebfcb;
+      background: var(--soft-blue);
+      color: #233743;
+      transform: translateX(2px);
+    }
+
+    nav a.is-active {
+      border-color: var(--slate);
+      background: var(--slate);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(23, 36, 45, 0.16);
+    }
+
+    .sidebar-copy {
+      display: grid;
+      gap: 6px;
+      padding: 2px 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sidebar-copy strong {
+      color: var(--slate);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .sidebar-copy span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .sidebar-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    .sidebar-group-title {
+      color: var(--subtle);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.78fr);
+      gap: 38px;
+      min-height: calc(100vh - var(--nav-h));
+      align-items: center;
+      padding: 78px min(5vw, 72px) 58px;
+      overflow: hidden;
+      background: #f7f1e8;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 34%;
+      background: linear-gradient(180deg, rgba(247, 241, 232, 0), rgba(249, 245, 238, 1));
+      pointer-events: none;
+    }
+
+    .hero-copy,
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 30px;
+      padding: 6px 11px;
+      border: 1px solid #c5d4de;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 18px 0 0;
+      font-size: 56px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      word-break: break-all;
+    }
+
+    .h1-line {
+      display: block;
+    }
+
+    .hero-sub {
+      max-width: 900px;
+      margin: 22px 0 0;
+      color: #40515b;
+      font-size: 20px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 15px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #fff;
+      color: #263a47;
+      font-size: 14px;
+      font-weight: 800;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .btn.primary {
+      border-color: var(--slate);
+      background: var(--slate);
+      color: #fff;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      border-color: #9fb5c4;
+      box-shadow: 0 12px 28px rgba(23, 36, 45, 0.12);
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 860px;
+      margin-top: 34px;
+    }
+
+    .metric {
+      min-height: 132px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 10px 26px rgba(23, 36, 45, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--slate);
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 900px;
+      margin-top: 18px;
+    }
+
+    .project-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 11px;
+      border: 1px solid rgba(36, 51, 63, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.84);
+      color: var(--slate);
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(23, 36, 45, 0.05);
+    }
+
+    .project-tag.blue {
+      background: var(--soft-blue);
+      color: var(--blue);
+    }
+
+    .project-tag.green {
+      background: var(--soft-green);
+      color: var(--green);
+    }
+
+    .project-tag.gold {
+      background: var(--soft-gold);
+      color: var(--gold);
+    }
+
+    .project-tag.rose {
+      background: var(--soft-rose);
+      color: var(--rose);
+    }
+
+    .hero-visual {
+      padding: 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+    }
+
+    .visual-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .visual-title strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .visual-title span {
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: var(--soft-green);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .dashboard-mini {
+      display: grid;
+      grid-template-columns: 0.7fr 1.3fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .mini-side,
+    .mini-main,
+    .mini-wide {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdff;
+    }
+
+    .mini-side {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      padding: 12px;
+    }
+
+    .mini-tab {
+      min-height: 34px;
+      padding: 8px 9px;
+      border-radius: 6px;
+      background: #eef4f8;
+      color: #486171;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mini-tab.active {
+      background: var(--slate);
+      color: #fff;
+    }
+
+    .mini-main {
+      padding: 12px;
+    }
+
+    .mini-bars {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: #d8e2e8;
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--blue);
+    }
+
+    .mini-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mini-card {
+      min-height: 58px;
+      border: 1px solid #d7e0e6;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .mini-wide {
+      grid-column: 1 / -1;
+      padding: 12px;
+    }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr 0.7fr;
+      gap: 8px;
+      padding: 9px 0;
+      border-bottom: 1px solid #e5ebef;
+    }
+
+    .mini-row:last-child {
+      border-bottom: 0;
+    }
+
+    .mini-row span {
+      height: 11px;
+      border-radius: 999px;
+      background: #e2e9ee;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    #overview {
+      order: 0;
+    }
+
+    #problem {
+      order: 1;
+    }
+
+    #result {
+      order: 2;
+    }
+
+    #value {
+      order: 3;
+    }
+
+    #solution {
+      order: 4;
+    }
+
+    #issues {
+      order: 5;
+    }
+
+    #users {
+      order: 6;
+    }
+
+    #flows {
+      order: 7;
+    }
+
+    #tech {
+      order: 8;
+    }
+
+    section {
+      padding: 74px min(5vw, 72px);
+      scroll-margin-top: 84px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+    }
+
+    #problem,
+    #value,
+    #issues,
+    #flows {
+      background: #fff;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .section-head {
+      position: relative;
+      display: grid;
+      gap: 14px;
+      max-width: 1040px;
+      margin-bottom: 34px;
+      padding-left: 18px;
+      border-left: 4px solid var(--slate);
+    }
+
+    .section-head::after {
+      content: "";
+      width: min(620px, 100%);
+      height: 1px;
+      margin-top: 4px;
+      background: linear-gradient(90deg, rgba(23, 36, 45, 0.32), rgba(23, 36, 45, 0));
+    }
+
+    .section-head .eyebrow {
+      min-height: 34px;
+      padding: 7px 13px;
+      border-color: var(--slate);
+      background: var(--slate);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(23, 36, 45, 0.12);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      color: var(--slate);
+      font-size: 36px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .section-lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      position: relative;
+      min-height: 100%;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: 0 8px 22px rgba(23, 36, 45, 0.05);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--soft-blue);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tag.green {
+      background: var(--soft-green);
+      color: var(--green);
+    }
+
+    .tag.gold {
+      background: var(--soft-gold);
+      color: var(--gold);
+    }
+
+    .tag.rose {
+      background: var(--soft-rose);
+      color: var(--rose);
+    }
+
+    .card h3 {
+      margin: 14px 0 8px;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card p {
+      margin-bottom: 0;
+    }
+
+    .compact-list {
+      display: grid;
+      gap: 8px;
+      padding: 0;
+      margin: 12px 0 0;
+      list-style: none;
+    }
+
+    .compact-list li {
+      position: relative;
+      padding-left: 16px;
+    }
+
+    .compact-list li::before {
+      content: "";
+      position: absolute;
+      top: 0.72em;
+      left: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .role-table {
+      display: grid;
+      gap: 12px;
+    }
+
+    .role-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 1.05fr;
+      gap: 12px;
+      align-items: stretch;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .role-row:hover {
+      transform: translateY(-3px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow);
+    }
+
+    .role-row b {
+      color: var(--slate);
+      font-size: 15px;
+    }
+
+    .role-row span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .solution-map {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .solution-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .step-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--slate);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .flow-board {
+      display: grid;
+      gap: 20px;
+    }
+
+    .flow-lane {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .flow-lane h3 {
+      margin: 0 0 14px;
+      font-size: 19px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .flow.flow-long {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .flow-node {
+      position: relative;
+      min-height: 96px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdff;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .flow-node:hover {
+      transform: translateY(-4px);
+      border-color: #a8becd;
+      background: #f2f8fc;
+      box-shadow: var(--shadow);
+    }
+
+    .flow-node::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -11px;
+      width: 10px;
+      height: 2px;
+      background: #b8c8d4;
+    }
+
+    .flow-node:last-child::after,
+    .flow-node:nth-child(5n)::after {
+      display: none;
+    }
+
+    .flow.flow-long .flow-node:nth-child(5n)::after {
+      display: block;
+    }
+
+    .flow.flow-long .flow-node:nth-child(6n)::after,
+    .flow.flow-long .flow-node:last-child::after {
+      display: none;
+    }
+
+    .flow-node b {
+      display: block;
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .flow-node span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .chain {
+      display: grid;
+      gap: 10px;
+    }
+
+    .chain-item {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .chain-item:hover {
+      transform: translateX(4px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow);
+    }
+
+    .chain-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--soft-blue);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .chain-item b {
+      display: block;
+      color: var(--slate);
+      font-size: 15px;
+    }
+
+    .chain-item span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mechanism-panel {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(23, 36, 45, 0.05);
+    }
+
+    .mechanism-panel h3 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .pill-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill-cloud span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fbfdff;
+      color: #40525d;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .data-layers {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .plain-note {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdff;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .layer {
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #fbfdff;
+    }
+
+    .layer b {
+      display: block;
+      font-size: 14px;
+      color: var(--slate);
+    }
+
+    .layer span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .issue-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .issue-card {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      min-height: 154px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .issue-card:hover {
+      transform: translateY(-4px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .issue-name {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .issue-name b {
+      color: var(--slate);
+      font-size: 16px;
+    }
+
+    .issue-text {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .issue-text strong {
+      color: #344650;
+      font-size: 13px;
+    }
+
+    .frameworks {
+      display: grid;
+      grid-template-columns: 0.88fr 1.12fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .frame-box {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(23, 36, 45, 0.05);
+    }
+
+    .frame-box h3 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .split-frame {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      min-height: 420px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f7fafc;
+    }
+
+    .split-nav {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .split-nav div,
+    .split-panel,
+    .board-block {
+      position: relative;
+      border: 1px solid #d7e1e8;
+      border-radius: 6px;
+      background: #fff;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .split-nav div {
+      min-height: 38px;
+      padding: 9px 10px;
+      color: #41535f;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .split-nav div:hover,
+    .split-panel:hover,
+    .board-block:hover {
+      transform: translateY(-3px);
+      border-color: #9fb7c8;
+      box-shadow: var(--shadow);
+    }
+
+    .split-content {
+      display: grid;
+      grid-template-rows: 0.8fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .split-panel {
+      display: grid;
+      align-content: center;
+      justify-items: start;
+      min-height: 100px;
+      padding: 14px;
+    }
+
+    .split-panel b,
+    .board-block b {
+      display: block;
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    .split-panel span,
+    .board-block span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .board-frame {
+      display: grid;
+      gap: 12px;
+      min-height: 520px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f7fafc;
+    }
+
+    .single-module-frame {
+      display: grid;
+      gap: 12px;
+      min-height: 520px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f7fafc;
+    }
+
+    .module-header {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 12px;
+    }
+
+    .module-layout {
+      display: grid;
+      grid-template-columns: 0.82fr 1.18fr;
+      gap: 12px;
+    }
+
+    .module-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .module-block {
+      position: relative;
+      min-height: 92px;
+      padding: 14px;
+      border: 1px solid #d7e1e8;
+      border-radius: 6px;
+      background: #fff;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .module-block:hover {
+      transform: translateY(-3px);
+      border-color: #9fb7c8;
+      box-shadow: var(--shadow);
+    }
+
+    .module-block.table {
+      min-height: 246px;
+    }
+
+    .module-block.chart {
+      min-height: 190px;
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        repeating-linear-gradient(180deg, #dbe6ec 0 1px, transparent 1px 34px);
+    }
+
+    .module-block.chart::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 42px;
+      height: 62px;
+      border-bottom: 3px solid var(--blue);
+      transform: skewX(-16deg);
+      opacity: 0.58;
+      pointer-events: none;
+    }
+
+    .module-block b {
+      display: block;
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    .module-block span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .board-top {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 12px;
+    }
+
+    .board-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .board-main {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+    }
+
+    .board-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .board-block {
+      min-height: 82px;
+      padding: 14px;
+    }
+
+    .board-block.summary {
+      min-height: 120px;
+    }
+
+    .board-block.table {
+      min-height: 210px;
+    }
+
+    .board-block.trend {
+      min-height: 210px;
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        repeating-linear-gradient(180deg, #dbe6ec 0 1px, transparent 1px 36px);
+    }
+
+    .board-block.trend::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 50px;
+      height: 72px;
+      border-bottom: 3px solid var(--green);
+      border-left: 3px solid transparent;
+      transform: skewX(-18deg);
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    .tooltip::after {
+      content: attr(data-note);
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: calc(100% + 8px);
+      z-index: 5;
+      display: none;
+      padding: 8px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #17242d;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.45;
+      box-shadow: var(--shadow);
+    }
+
+    .tooltip:hover::after {
+      display: block;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 0;
+    }
+
+    .showcase-grid {
+      display: grid;
+      gap: 22px;
+      margin-top: 20px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    #result .wrap {
+      max-width: 1360px;
+    }
+
+    #overview .wrap,
+    #problem .wrap {
+      max-width: 1360px;
+    }
+
+    .showcase-card {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(23, 36, 45, 0.05);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .showcase-card:hover {
+      transform: translateY(-3px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .showcase-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .showcase-head h3 {
+      margin: 0;
+      color: var(--slate);
+      font-size: 22px;
+    }
+
+    .showcase-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .preview-shell {
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #f7fafc;
+    }
+
+    .preview-shell.dashboard-fixed {
+      max-width: 1280px;
+      margin: 0 auto;
+      overflow-x: auto;
+      background: #fff;
+    }
+
+    .preview-scale-viewport {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .preview-scale-stage {
+      width: 1240px;
+      max-width: none;
+      transform-origin: top left;
+      will-change: transform;
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 42px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #eef3f7;
+      color: #42545f;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .window-dots {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .window-dots i {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #b9c8d3;
+    }
+
+    .window-dots i:nth-child(1) {
+      background: #c56a69;
+    }
+
+    .window-dots i:nth-child(2) {
+      background: #d2a64a;
+    }
+
+    .window-dots i:nth-child(3) {
+      background: #65a077;
+    }
+
+    .preview-frame {
+      display: block;
+      width: 100%;
+      height: 720px;
+      border: 0;
+      background: #fff;
+    }
+
+    .preview-frame.compact {
+      height: 760px;
+    }
+
+    .preview-shell.dashboard-fixed .preview-frame.compact {
+      min-height: 760px;
+    }
+
+    .result-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .value-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .value-card {
+      min-height: 150px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .value-card:hover {
+      transform: translateY(-4px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .value-card b {
+      display: block;
+      margin-top: 12px;
+      color: var(--slate);
+      font-size: 18px;
+    }
+
+    .value-card span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      padding-left: 20px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 5px;
+      width: 2px;
+      background: #c9d6df;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      top: 24px;
+      left: -20px;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: var(--blue);
+      box-shadow: 0 0 0 1px #9fb7c8;
+    }
+
+    .timeline-item:hover {
+      transform: translateX(4px);
+      border-color: #b7c7d2;
+      box-shadow: var(--shadow);
+    }
+
+    .timeline-item b {
+      color: var(--slate);
+      font-size: 16px;
+    }
+
+    .timeline-item span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .back-top {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 75;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--slate);
+      color: #fff;
+      font-size: 19px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .back-top:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .back-top.show {
+      display: inline-flex;
+    }
+
+    @media (min-width: 1280px) {
+      #result .wrap {
+        width: 1280px;
+      }
+
+      .preview-shell.dashboard-fixed {
+        width: 1240px;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      body {
+        padding-left: 0;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        left: auto;
+        bottom: auto;
+        width: auto;
+        min-height: 0;
+        padding: 14px 16px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(220, 227, 232, 0.95);
+      }
+
+      .sidebar-copy {
+        display: none;
+      }
+
+      .sidebar-group-title {
+        display: none;
+      }
+
+      .brand {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      nav {
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+      }
+
+      nav a {
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .hero-visual {
+        max-width: 760px;
+      }
+
+      .grid-4,
+      .value-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .flow,
+      .flow.flow-long {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .flow-node:nth-child(3n)::after,
+      .flow.flow-long .flow-node:nth-child(3n)::after {
+        display: none;
+      }
+
+      .flow-node:nth-child(5n)::after,
+      .flow.flow-long .flow-node:nth-child(5n)::after {
+        display: block;
+      }
+
+      .flow-node:last-child::after,
+      .flow.flow-long .flow-node:last-child::after {
+        display: none;
+      }
+
+      .tech-grid,
+      .frameworks {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 16px;
+      }
+
+      nav {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .hero,
+      section {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      h1 {
+        font-size: 32px;
+        line-height: 1.18;
+      }
+
+      .hero-sub {
+        font-size: 17px;
+      }
+
+      .section-head h2 {
+        font-size: 26px;
+      }
+
+      .hero-metrics,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .solution-map,
+      .issue-grid,
+      .value-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-mini,
+      .role-row,
+      .issue-card,
+      .split-frame,
+      .showcase-head,
+      .module-header,
+      .module-layout,
+      .board-top,
+      .board-main,
+      .board-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .flow,
+      .flow.flow-long {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-node::after,
+      .flow-node:nth-child(5n)::after,
+      .flow.flow-long .flow-node:nth-child(5n)::after {
+        display: none;
+      }
+
+      .board-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .split-frame,
+      .board-frame {
+        min-height: auto;
+      }
+
+      .preview-frame,
+      .preview-frame.compact {
+        height: 520px;
+      }
+
+      .preview-shell.dashboard-fixed {
+        overflow-x: auto;
+      }
+
+      .preview-shell.dashboard-fixed .preview-frame.compact {
+        width: 1180px;
+        max-width: none;
+        min-height: 640px;
+      }
+
+      .back-top {
+        right: 14px;
+        bottom: 14px;
+      }
+    }
+
+    /* frontend-design polish: outer case-page layout only. */
+    :root {
+      --bg: #edf1f3;
+      --paper: #fffdf8;
+      --ink: #132129;
+      --muted: #53636d;
+      --subtle: #7c878e;
+      --line: #d9e0e3;
+      --line-strong: #b9c6cc;
+      --blue: #245a7a;
+      --green: #386f63;
+      --gold: #a06f28;
+      --rose: #9a5159;
+      --slate: #192832;
+      --soft-blue: #e6f0f4;
+      --soft-green: #e7f2ed;
+      --soft-gold: #fbedd2;
+      --soft-rose: #f5e3e3;
+      --shadow: 0 18px 42px rgba(16, 30, 39, 0.1);
+      --shadow-hover: 0 26px 58px rgba(16, 30, 39, 0.16);
+      --radius: 8px;
+    }
+
+    body {
+      background:
+        linear-gradient(90deg, #17242d 0 var(--sidebar-w), transparent var(--sidebar-w)),
+        linear-gradient(135deg, #edf1f3 0%, #f6f1e8 48%, #eaf2ef 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+      color: var(--ink);
+    }
+
+    h1,
+    .section-head h2,
+    .card h3,
+    .flow-lane h3,
+    .mechanism-panel h3,
+    .frame-box h3,
+    .showcase-head h3 {
+      font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", SimSun, serif;
+      font-weight: 800;
+    }
+
+    .progress {
+      height: 4px;
+      background: linear-gradient(90deg, #d6a040, #5d8d7c, #2a6688);
+      box-shadow: 0 0 18px rgba(214, 160, 64, 0.38);
+    }
+
+    .topbar {
+      gap: 22px;
+      padding: 28px 20px 24px;
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0)),
+        #17242d;
+      box-shadow: 14px 0 34px rgba(12, 22, 29, 0.13);
+    }
+
+    .brand {
+      gap: 8px;
+      padding: 0 0 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .brand strong {
+      color: #fff8e9;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .brand span,
+    .sidebar-copy span,
+    .sidebar-group-title {
+      color: rgba(255, 248, 233, 0.62);
+    }
+
+    .sidebar-copy {
+      padding-bottom: 18px;
+      border-bottom-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .sidebar-copy strong {
+      color: #fff8e9;
+    }
+
+    .sidebar-group-title {
+      letter-spacing: 0.16em;
+    }
+
+    nav {
+      gap: 9px;
+    }
+
+    nav a {
+      position: relative;
+      padding: 12px 13px 12px 15px;
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.055);
+      color: rgba(255, 248, 233, 0.82);
+      box-shadow: none;
+    }
+
+    nav a::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: 0;
+      width: 3px;
+      border-radius: 99px;
+      background: rgba(214, 160, 64, 0.36);
+      opacity: 0;
+      transition: opacity 0.18s ease, background 0.18s ease;
+    }
+
+    nav a:hover {
+      border-color: rgba(255, 248, 233, 0.26);
+      background: rgba(255, 248, 233, 0.1);
+      color: #fff8e9;
+      transform: translateX(4px);
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.12);
+    }
+
+    nav a:hover::before,
+    nav a.is-active::before {
+      opacity: 1;
+    }
+
+    nav a.is-active {
+      border-color: rgba(214, 160, 64, 0.62);
+      background: linear-gradient(90deg, rgba(214, 160, 64, 0.22), rgba(255, 248, 233, 0.1));
+      color: #fff8e9;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.16);
+    }
+
+    nav a.is-active::before {
+      background: #d6a040;
+    }
+
+    .hero {
+      min-height: 100vh;
+      padding-top: 82px;
+      padding-bottom: 66px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.16)),
+        linear-gradient(118deg, #f4ead9 0%, #edf4f1 54%, #e4edf2 100%);
+      border-bottom-color: rgba(25, 40, 50, 0.12);
+    }
+
+    .hero::before {
+      inset: 0;
+      height: auto;
+      background:
+        linear-gradient(90deg, rgba(25, 40, 50, 0.06) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(25, 40, 50, 0.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.5), transparent 78%);
+      opacity: 0.55;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -9vw;
+      top: 8vh;
+      width: 42vw;
+      height: 72vh;
+      border: 1px solid rgba(25, 40, 50, 0.12);
+      background: linear-gradient(180deg, rgba(255, 253, 248, 0.5), rgba(255, 253, 248, 0.1));
+      transform: skewX(-12deg);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      border-color: rgba(36, 90, 122, 0.24);
+      background: rgba(255, 253, 248, 0.78);
+      box-shadow: 0 10px 22px rgba(16, 30, 39, 0.06);
+    }
+
+    h1 {
+      max-width: 1040px;
+      font-size: clamp(44px, 5vw, 72px);
+      line-height: 1.03;
+      color: #132129;
+    }
+
+    .hero-sub {
+      max-width: 920px;
+      color: #364a55;
+      font-size: 19px;
+      line-height: 1.82;
+    }
+
+    .btn {
+      min-height: 44px;
+      padding: 11px 17px;
+      border-color: rgba(25, 40, 50, 0.18);
+      background: rgba(255, 253, 248, 0.86);
+      box-shadow: 0 10px 20px rgba(16, 30, 39, 0.06);
+    }
+
+    .btn.primary {
+      background: #192832;
+      box-shadow: 0 18px 34px rgba(25, 40, 50, 0.22);
+    }
+
+    .metric,
+    .hero-visual,
+    .card,
+    .role-row,
+    .flow-lane,
+    .flow-node,
+    .chain-item,
+    .mechanism-panel,
+    .issue-card,
+    .frame-box,
+    .showcase-card,
+    .value-card,
+    .timeline-item {
+      border-color: rgba(25, 40, 50, 0.12);
+      background: rgba(255, 253, 248, 0.92);
+      box-shadow: 0 14px 32px rgba(16, 30, 39, 0.06);
+    }
+
+    .hero-metrics {
+      gap: 14px;
+    }
+
+    .metric {
+      min-height: 142px;
+      padding: 20px;
+    }
+
+    .metric b {
+      font-size: 19px;
+    }
+
+    .project-tag {
+      border-color: rgba(25, 40, 50, 0.12);
+      background: rgba(255, 253, 248, 0.76);
+    }
+
+    .hero-visual {
+      backdrop-filter: blur(8px);
+    }
+
+    section {
+      padding-top: 88px;
+      padding-bottom: 88px;
+      border-bottom-color: rgba(25, 40, 50, 0.11);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0)),
+        var(--bg);
+    }
+
+    #problem,
+    #value,
+    #issues,
+    #flows {
+      background:
+        linear-gradient(180deg, rgba(255, 253, 248, 0.88), rgba(255, 253, 248, 0.6)),
+        #f8f4eb;
+    }
+
+    .wrap {
+      width: min(100%, 1180px);
+    }
+
+    .section-head {
+      gap: 16px;
+      margin-bottom: 40px;
+      padding: 0 0 0 24px;
+      border-left: 6px solid #d6a040;
+    }
+
+    .section-head::after {
+      width: min(720px, 100%);
+      background: linear-gradient(90deg, rgba(25, 40, 50, 0.36), rgba(25, 40, 50, 0));
+    }
+
+    .section-head .eyebrow {
+      border-color: rgba(25, 40, 50, 0.88);
+      background: #192832;
+      color: #fff8e9;
+      box-shadow: 0 14px 28px rgba(25, 40, 50, 0.16);
+    }
+
+    .section-head h2 {
+      font-size: clamp(30px, 3.2vw, 44px);
+      line-height: 1.15;
+      color: #192832;
+    }
+
+    .section-lead {
+      max-width: 980px;
+      color: #4d5f68;
+      font-size: 17px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      gap: 18px;
+    }
+
+    .card,
+    .value-card,
+    .mechanism-panel,
+    .frame-box {
+      padding: 22px;
+    }
+
+    .card::before,
+    .value-card::before,
+    .issue-card::before,
+    .timeline-item::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      border-radius: var(--radius) 0 0 var(--radius);
+      background: linear-gradient(180deg, #d6a040, rgba(56, 111, 99, 0.78));
+      opacity: 0.78;
+      pointer-events: none;
+    }
+
+    .card h3 {
+      margin-top: 16px;
+      color: #17242d;
+      font-size: 21px;
+    }
+
+    .card p,
+    .card li,
+    .role-row span,
+    .issue-text,
+    .chain-item span,
+    .timeline-item span,
+    .value-card span {
+      line-height: 1.78;
+    }
+
+    .tag,
+    .chain-dot,
+    .step-no,
+    .status-pill {
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.46);
+    }
+
+    .role-row,
+    .chain-item {
+      background: rgba(255, 253, 248, 0.94);
+    }
+
+    .flow-lane {
+      padding: 22px;
+    }
+
+    .flow-node {
+      min-height: 108px;
+      background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(246, 250, 251, 0.94));
+    }
+
+    .flow-node::after {
+      background: linear-gradient(90deg, #d6a040, #8aa79d);
+    }
+
+    .issue-grid {
+      gap: 16px;
+    }
+
+    .issue-card {
+      position: relative;
+      padding: 18px 18px 18px 20px;
+    }
+
+    .showcase-card {
+      padding: 20px;
+      background:
+        linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(255, 255, 255, 0.98));
+    }
+
+    .showcase-head {
+      margin-bottom: 18px;
+    }
+
+    .preview-shell {
+      border-color: rgba(25, 40, 50, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .preview-toolbar {
+      background: linear-gradient(90deg, #eef3f1, #f8f1e2);
+      color: #334650;
+    }
+
+    .timeline {
+      gap: 14px;
+    }
+
+    .timeline::before {
+      background: linear-gradient(180deg, #d6a040, #5d8d7c);
+    }
+
+    .back-top {
+      border-color: rgba(255, 248, 233, 0.24);
+      background: #17242d;
+      box-shadow: 0 18px 38px rgba(16, 30, 39, 0.2);
+    }
+
+    @media (max-width: 1100px) {
+      body {
+        background: linear-gradient(135deg, #edf1f3 0%, #f6f1e8 48%, #eaf2ef 100%);
+      }
+
+      .topbar {
+        background: rgba(23, 36, 45, 0.98);
+        box-shadow: 0 12px 30px rgba(16, 30, 39, 0.12);
+      }
+
+      .brand {
+        padding-bottom: 0;
+      }
+
+      nav a {
+        padding: 10px 12px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 64px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      h1 {
+        font-size: 34px;
+      }
+
+      .hero,
+      section {
+        padding-top: 58px;
+        padding-bottom: 58px;
+      }
+
+      .section-head {
+        padding-left: 16px;
+        margin-bottom: 30px;
+      }
+
+      .section-head h2 {
+        font-size: 28px;
+      }
+
+      .card,
+      .value-card,
+      .mechanism-panel,
+      .frame-box,
+      .flow-lane,
+      .showcase-card {
+        padding: 18px;
+      }
+
+      .metric {
+        min-height: auto;
+      }
+    }
+
+    /* Requested detail fixes: title wrapping, result-area fit, and quieter sidebar. */
+    .sidebar-group-title {
+      display: none;
+    }
+
+    .hero h1 {
+      max-width: 1120px;
+      font-size: clamp(40px, 4.2vw, 60px);
+      line-height: 1.08;
+      word-break: keep-all;
+      overflow-wrap: normal;
+      white-space: nowrap;
+    }
+
+    .hero h1 .h1-line {
+      display: inline;
+    }
+
+    #result .wrap {
+      width: min(100%, 1180px);
+      max-width: 1180px;
+      min-width: 0;
+    }
+
+    #result .showcase-card {
+      width: 100%;
+      max-width: 1360px;
+      min-width: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    #result .preview-scale-viewport {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    #result .preview-scale-stage {
+      width: 1360px;
+      max-width: none;
+      min-width: 0;
+      transform-origin: top left;
+      will-change: transform;
+      display: block;
+      min-height: 0;
+    }
+
+    #result .preview-shell.dashboard-fixed {
+      width: 1360px;
+      max-width: none;
+      min-width: 0;
+      overflow-x: hidden;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    #result .preview-shell.dashboard-fixed .preview-frame.compact {
+      width: 1360px;
+      max-width: none;
+    }
+
+    #result .showcase-grid {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    @media (max-width: 820px) {
+      .hero h1 {
+        font-size: 34px;
+        white-space: normal;
+      }
+    }
+
+    @media (min-width: 1101px) and (max-width: 1380px) {
+      :root {
+        --sidebar-w: 264px;
+      }
+
+      .topbar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero,
+      section {
+        padding-left: clamp(30px, 3.4vw, 48px);
+        padding-right: clamp(30px, 3.4vw, 48px);
+      }
+
+      nav a {
+        padding-left: 12px;
+        padding-right: 10px;
+        font-size: 12.5px;
+      }
+
+      #result .showcase-card {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="返回项目首页">
+      <strong>蝉妈妈数据周报看板</strong>
+      <span>项目案例展示</span>
+    </a>
+    <div class="sidebar-group">
+    <nav aria-label="页面导航">
+      <a href="#overview" class="nav-link">01 项目背景与目标</a>
+      <a href="#problem" class="nav-link">02 为什么要做数据周报看板</a>
+      <a href="#result" class="nav-link">03 我做成了什么成果</a>
+      <a href="#value" class="nav-link">04 我的核心贡献是什么</a>
+      <a href="#solution" class="nav-link">05 项目如何一步步演进</a>
+      <a href="#issues" class="nav-link">06 遇到问题后如何处理</a>
+      <a href="#users" class="nav-link">07 看板如何服务业务阅读</a>
+      <a href="#flows" class="nav-link">08 周报链路如何跑通</a>
+      <a href="#tech" class="nav-link">09 自动化如何支撑复用</a>
+    </nav>
+    </div>
+  </header>
+
+  <section id="top" class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">从人工周报到可复用数据产品</div>
+      <h1>蝉妈妈数据周报看板项目</h1>
+      <p class="hero-sub">
+        本项目围绕业务团队每周查看、复制、整理蝉妈妈平台数据的重复流程，搭建自动化采集、数据整理、HTML 看板展示与飞书摘要推送链路，让周报从人工汇总变成可持续复用的业务看板流程。
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#flows">查看核心流程</a>
+        <a class="btn" href="#result">查看看板页面</a>
+      </div>
+      <div class="hero-metrics" aria-label="项目摘要">
+        <div class="metric">
+          <b>我解决了什么问题？</b>
+          <span>减少每周机械整理蝉妈妈数据的重复劳动，并补足平台默认视图不够灵活的问题。</span>
+        </div>
+        <div class="metric">
+          <b>取得了什么成果？</b>
+          <span>跑通从数据抓取、数据整理、看板生成到飞书摘要推送的完整周报交付流程。</span>
+        </div>
+        <div class="metric">
+          <b>核心贡献是什么？</b>
+          <span>把公司真正想看的筛选、横向对比和趋势变化，整理成一套可阅读、可复用的周报看板结构。</span>
+        </div>
+      </div>
+      <div class="project-tags" aria-label="项目性质">
+        <span class="project-tag blue">数据看板项目</span>
+        <span class="project-tag green">OpenClaw 协作开发</span>
+        <span class="project-tag gold">个人独立负责</span>
+        <span class="project-tag rose">自动化周报链路</span>
+        <span class="project-tag">外部平台数据整理</span>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-label="看板结构示意">
+      <div class="visual-top">
+        <div class="visual-title">
+          <strong>自动化周报看板方案</strong>
+          <span>摘要、明细、趋势、运行状态一体化</span>
+        </div>
+        <span class="status-pill">latest-success</span>
+      </div>
+      <div class="dashboard-mini">
+        <div class="mini-side">
+          <div class="mini-tab active">视频课</div>
+          <div class="mini-tab">图书</div>
+          <div class="mini-tab">APP/单词王</div>
+        </div>
+        <div class="mini-main">
+          <div class="mini-cards">
+            <div class="mini-card"></div>
+            <div class="mini-card"></div>
+            <div class="mini-card"></div>
+          </div>
+          <div class="mini-bars">
+            <div class="bar"><i style="width: 78%"></i></div>
+            <div class="bar"><i style="width: 58%; background: var(--green)"></i></div>
+            <div class="bar"><i style="width: 68%; background: var(--gold)"></i></div>
+          </div>
+        </div>
+        <div class="mini-wide">
+          <div class="mini-row"><span></span><span></span><span></span></div>
+          <div class="mini-row"><span></span><span></span><span></span></div>
+          <div class="mini-row"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section id="overview">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">01 项目背景与目标</div>
+          <h2>基于蝉妈妈平台数据，建设可复用的数据周报看板与推送流程</h2>
+          <p class="section-lead">
+            原流程依赖人工进入多个 dashboard、筛选周期、复制明细、核对口径并同步结论。项目将这些动作拆解为需求定义、浏览器自动化采集、数据标准化、状态记录、看板展示和消息分发，形成一套可持续运行的产品化链路。
+          </p>
+        </div>
+
+        <div class="grid-4">
+          <article class="card">
+            <span class="tag">项目角色</span>
+            <h3>产品与执行闭环</h3>
+            <p>负责需求梳理、指标口径拆解、采集方案设计、数据池结构、看板页面与运行验收。</p>
+          </article>
+          <article class="card">
+            <span class="tag green">交付内容</span>
+            <h3>看板与周报链路</h3>
+            <p>交付 HTML 周报/看板结构、数据归档规则、运行状态文件和飞书摘要分发方案。</p>
+          </article>
+          <article class="card">
+            <span class="tag gold">业务范围</span>
+            <h3>多业务线复用</h3>
+            <p>覆盖视频课、图书、APP/单词王三类业务线，抽象相似模块并保留差异化字段处理。</p>
+          </article>
+          <article class="card">
+            <span class="tag rose">关键判断</span>
+            <h3>从一次整理转向长期复用</h3>
+            <p>不只完成当周周报，而是把需求、口径、看板结构和运行检查沉淀下来，方便后续继续沿用。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="problem">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">02 为什么要做数据周报看板</div>
+          <h2>核心业务问题是周报整理太机械，而平台默认视图又不够贴合公司分析需求</h2>
+          <p class="section-lead">
+            业务团队需要持续关注竞品账号、直播、视频、商品上新和销售趋势。蝉妈妈平台能提供基础数据，但老板和业务侧更需要按公司关注点重新筛选、横向比较、纵向观察变化，因此原本只能依赖人工反复整理。
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <article class="card">
+            <span class="tag">重复劳动</span>
+            <h3>每周整理动作机械且耗时</h3>
+            <p>人工需要反复进入蝉妈妈不同页面，筛选周期、复制数据、整理表格、核对结论，很多时间消耗在低价值重复操作上。</p>
+          </article>
+          <article class="card">
+            <span class="tag green">灵活性不足</span>
+            <h3>平台默认视图难以满足个性化分析</h3>
+            <p>蝉妈妈本身的数据展示更偏平台通用视角，业务想按自家关注的账号、商品、时间段和指标组合查看时，需要重新组织数据。</p>
+          </article>
+          <article class="card">
+            <span class="tag gold">对比需求</span>
+            <h3>横向与纵向对比需要额外加工</h3>
+            <p>老板和业务侧常需要看不同账号、商品、业务线之间的横向差异，也需要看本周与上一周期的波动，这些都很难只靠平台默认页面直接完成。</p>
+          </article>
+          <article class="card">
+            <span class="tag rose">决策支持</span>
+            <h3>周报需要服务经营判断</h3>
+            <p>周报不只是把数据搬出来，还要帮助公司观察业绩变化、竞品动作和后续计划方向，因此需要更清晰的摘要、趋势和明细结构。</p>
+          </article>
+          <article class="card">
+            <span class="tag">响应速度</span>
+            <h3>临时调整需求时人工成本高</h3>
+            <p>如果需要新增观察对象、调整指标或更换排序方式，人工周报往往要重新回到平台筛选和整理，响应不够快。</p>
+          </article>
+          <article class="card">
+            <span class="tag green">复用价值</span>
+            <h3>一次整理难以变成长期能力</h3>
+            <p>单次人工整理只能解决当周交付，不能自然沉淀成后续可复用的看板结构、数据口径和周报生产流程。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="users">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">07 看板如何服务业务阅读</div>
+          <h2>我把不同层级的阅读需求，拆成摘要、趋势、明细和状态几层</h2>
+          <p class="section-lead">
+            看板不是简单堆数据，而是把公司内部不同角色的阅读重点放进同一套页面：先看结论，再看趋势，再看明细，最后保留运行状态用于确认本轮数据是否可靠。
+          </p>
+        </div>
+
+        <div class="role-table">
+          <div class="role-row">
+            <b>老板</b>
+            <span>关注本周业务结果、重点变化、异常波动和是否需要调整资源投入。</span>
+            <span>优先阅读顶部摘要、核心指标和重点观察结论，快速判断本周竞争动态。</span>
+          </div>
+          <div class="role-row">
+            <b>业务负责人</b>
+            <span>关注本周变化、重点账号/商品、异常波动和下一步观察方向。</span>
+            <span>通过飞书摘要快速进入看板，优先阅读顶部概览、趋势和重点变化。</span>
+          </div>
+          <div class="role-row">
+            <b>运营人员</b>
+            <span>需要查看直播、视频、商品上新和热销商品等明细，用于内容复盘和动作跟进。</span>
+            <span>在看板内按业务线、模块和关键词筛选明细，进一步定位可参考对象。</span>
+          </div>
+          <div class="role-row">
+            <b>项目维护者</b>
+            <span>需要确认本轮数据是否已经跑通，是否存在失败模块，是否可以用于正式周报。</span>
+            <span>查看运行摘要、模块状态和最新可用版本标记，判断是否需要补跑或复查。</span>
+          </div>
+          <div class="role-row">
+            <b>数据口径维护</b>
+            <span>关注指标含义、缺失值、展示文案和不同业务线之间的字段差异。</span>
+            <span>维护字段说明和归档规则，保证看板后续扩展时仍能保持一致口径。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="solution">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">05 项目如何一步步演进</div>
+          <h2>我先验证看板可行性，再逐步推进到更自动化、更稳定的周报链路</h2>
+          <p class="section-lead">
+            这个项目不是一开始就完整自动化，而是从半自动化抓取和 HTML 看板验证开始，先证明数据可以被整理成业务可读的结构，再把采集、归档、生成和推送逐步串成完整流程。
+          </p>
+        </div>
+
+        <div class="solution-map">
+          <article class="card solution-card">
+            <span class="step-no">1</span>
+            <div>
+              <span class="tag">半自动化验证</span>
+              <h3>先验证数据抓取和看板展示是否可行</h3>
+              <p>早期先用半自动化方式抓取关键模块数据，再做成 HTML 看板，确认这类周报可以从人工表格整理升级为页面化展示。</p>
+            </div>
+          </article>
+          <article class="card solution-card">
+            <span class="step-no">2</span>
+            <div>
+              <span class="tag green">结构化看板</span>
+              <h3>把周报阅读结构固定下来</h3>
+              <p>围绕摘要、趋势图、明细表和重点观察对象组织页面，让业务侧不只是拿到数据，而是能按固定结构快速读懂变化。</p>
+            </div>
+          </article>
+          <article class="card solution-card">
+            <span class="step-no">3</span>
+            <div>
+              <span class="tag gold">全流程自动化</span>
+              <h3>再把采集、整理和生成串成流程</h3>
+              <p>后续引入浏览器自动化、数据池归档和版本标记，把每周需要重复做的抓取、整理、生成动作尽量固定下来。</p>
+            </div>
+          </article>
+          <article class="card solution-card">
+            <span class="step-no">4</span>
+            <div>
+              <span class="tag rose">交付沉淀</span>
+              <h3>沉淀为可复用的周报交付链路</h3>
+              <p>最终形成“抓取数据、整理口径、生成看板、推送摘要、复查问题”的闭环，让下一期周报可以沿用同一套方法继续生产。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="flows">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">08 周报链路如何跑通</div>
+          <h2>我把项目推进流程和自动化抓取执行流程分开管理</h2>
+          <p class="section-lead">
+            第一条流程描述数据产品如何从业务需求走到发布反馈；第二条流程描述自动化采集如何在浏览器页面中完成稳定执行。
+          </p>
+        </div>
+
+        <div class="flow-board">
+          <div class="flow-lane">
+            <h3>项目整体任务流程</h3>
+            <div class="flow">
+              <div class="flow-node"><b>业务方需求</b><span>明确周报目标和阅读对象</span></div>
+              <div class="flow-node"><b>指标与数据源确认</b><span>确认业务线、模块和统计周期</span></div>
+              <div class="flow-node"><b>采集方案设计</b><span>选择浏览器自动化与后续 API 演进路径</span></div>
+              <div class="flow-node"><b>清洗与归一</b><span>统一字段、缺失值和展示口径</span></div>
+              <div class="flow-node"><b>数据池归档</b><span>按 week_id、run_id 和模块保存版本</span></div>
+              <div class="flow-node"><b>HTML 看板展示</b><span>摘要、明细、趋势、状态分层展示</span></div>
+              <div class="flow-node"><b>飞书摘要推送</b><span>推送本周重点和看板访问入口</span></div>
+              <div class="flow-node"><b>用户反馈</b><span>收集口径、模块和展示问题</span></div>
+              <div class="flow-node"><b>下一轮迭代</b><span>优化指标、异常提醒和权限能力</span></div>
+            </div>
+          </div>
+
+          <div class="flow-lane">
+            <h3>自动化抓取执行流程</h3>
+            <div class="flow flow-long">
+              <div class="flow-node"><b>启动专用浏览器</b><span>尽量保留稳定登录状态</span></div>
+              <div class="flow-node"><b>确认可进入页面</b><span>先检查是否需要重新登录</span></div>
+              <div class="flow-node"><b>让工具接管浏览器</b><span>进入同一个已登录环境</span></div>
+              <div class="flow-node"><b>打开固定 dashboard</b><span>进入目标业务页面</span></div>
+              <div class="flow-node"><b>检查页面状态</b><span>确认不是半加载或错误页面，并定位到目标模块</span></div>
+              <div class="flow-node"><b>读取页面数据</b><span>取出页面已经展示出来的表格和图表结果</span></div>
+              <div class="flow-node"><b>保存原始结果</b><span>保留本轮抓取痕迹</span></div>
+              <div class="flow-node"><b>整理统一字段</b><span>处理字段名称、缺失值和展示口径</span></div>
+              <div class="flow-node"><b>生成运行记录</b><span>记录成功模块、失败模块和可用版本</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tech">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">09 自动化如何支撑复用</div>
+          <h2>技术实现的重点，是把人工操作拆成可以持续复用的固定步骤</h2>
+          <p class="section-lead">
+            这部分不强调复杂技术细节，而是说明项目如何把“打开网页、确认登录、等待数据出现、整理结果、生成看板”这些人工动作固定下来，让每周周报可以按同一套流程重复生产。
+          </p>
+        </div>
+
+        <div class="tech-grid">
+          <div class="chain" aria-label="实现链路">
+            <div class="chain-item">
+              <span class="chain-dot">01</span>
+              <div><b>先固定工作环境</b><span>在 OpenClaw 中集中管理脚本、数据和看板文件，避免每次重新找文件、重新搭环境。</span></div>
+            </div>
+            <div class="chain-item">
+              <span class="chain-dot">02</span>
+              <div><b>再固定浏览器入口</b><span>用专门的 Chrome 容器保留登录状态，减少反复验证码和登录失效带来的中断。</span></div>
+            </div>
+            <div class="chain-item">
+              <span class="chain-dot">03</span>
+              <div><b>让工具接管同一个浏览器</b><span>通过 agent-browser 连接固定浏览器环境，确保自动化不是每次打开一个全新的空白页面。</span></div>
+            </div>
+            <div class="chain-item">
+              <span class="chain-dot">04</span>
+              <div><b>模拟人工查看网页</b><span>按固定顺序打开 dashboard、滚动到目标板块、等待数据加载，再读取页面上已经展示出来的结构化结果。</span></div>
+            </div>
+            <div class="chain-item">
+              <span class="chain-dot">05</span>
+              <div><b>把结果放进数据池</b><span>保留原始抓取结果，再整理成看板能直接使用的统一格式，同时记录本轮运行状态。</span></div>
+            </div>
+            <div class="chain-item">
+              <span class="chain-dot">06</span>
+              <div><b>生成 HTML 看板</b><span>把本周摘要、业务线切换、表格明细、趋势图和运行状态放到同一个可阅读页面里。</span></div>
+            </div>
+            <div class="chain-item">
+              <span class="chain-dot">07</span>
+      <div><b>标记最新可用版本</b><span>用 run_id、week_id、RUN_SUMMARY、manifest 和 latest-success 记录哪一轮结果可用于正式周报。</span></div>
+            </div>
+          </div>
+
+          <aside class="mechanism-panel">
+            <h3>我对技术实现的理解</h3>
+            <p class="section-lead">
+              这套方案的核心不是“写一个爬虫”，而是让工具替代人完成一组稳定动作：进入正确页面、等页面真的加载好、把需要的模块数据取出来、统一整理成看板。技术工具只是实现手段，最终服务的是周报效率和数据口径稳定。
+            </p>
+            <div class="pill-cloud">
+              <span>固定登录环境</span>
+              <span>自动打开页面</span>
+              <span>确认模块可见</span>
+              <span>读取页面结果</span>
+              <span>保留原始数据</span>
+              <span>统一字段口径</span>
+              <span>生成 HTML 看板</span>
+              <span>记录运行摘要</span>
+              <span>标记最新可用版本</span>
+              <span>失败模块复查</span>
+            </div>
+            <div class="data-layers">
+              <div class="layer">
+                <b>raw：保留原始结果</b>
+                <span>用于回看当时抓到了什么，避免后面看板数据有疑问时无法核对。</span>
+              </div>
+              <div class="layer">
+                <b>normalized：整理成统一口径</b>
+                <span>把不同模块、不同业务线的数据整理成看板可以复用的字段结构。</span>
+              </div>
+              <div class="layer">
+                <b>index：记录当前可用版本</b>
+                <span>让看板知道应该读取哪一轮最新成功数据，也方便定位历史版本。</span>
+              </div>
+            </div>
+            <div class="plain-note">
+              对外介绍时可以这样概括：我负责把人工周报流程拆成一套自动化生产链路，并和 AI/自动化工具配合，把登录、页面加载、数据归档、看板生成和异常排查这些环节逐步固定下来。
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="issues">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">06 遇到问题后如何处理</div>
+          <h2>我按真实工作过程排查问题，把不稳定的流程一步步稳定下来</h2>
+          <p class="section-lead">
+            这个项目不是一开始就顺利跑通，而是在不断试错中确认：问题往往不只是“脚本写错”，还包括登录状态、页面有没有加载好、目标板块有没有出现、数据是否完整、文件版本是否混乱等。下面用更接近工作记录的方式说明处理过程。
+          </p>
+        </div>
+
+        <div class="issue-grid">
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag">登录态</span>
+              <b>经常被要求重新登录</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>抓取时页面被退出登录，重新登录又需要验证码，整个流程会被打断。</div>
+              <div><strong>处理：</strong>把蝉妈妈放到更稳定的专用浏览器环境里，尽量复用已有登录状态；每次运行前先确认页面能正常进入，再开始抓取。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag green">页面状态</span>
+              <b>页面看着打开了，但不是可抓取状态</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>同一个 dashboard 地址，有时能抓到，有时找不到板块，前一个模块跑完后还会影响后一个模块。</div>
+              <div><strong>处理：</strong>不再默认“URL 对了就可以抓”，而是在每个关键模块前先把页面恢复到一个干净状态，再确认主页面加载完成。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag gold">模块加载</span>
+              <b>页面下半段板块一开始抓不到</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>新发视频、新上架商品等模块明明在页面里，但脚本一开始总是提示找不到容器。</div>
+              <div><strong>处理：</strong>后来确认这些板块需要滚动到附近才会真正加载，所以流程里加入“逐步下滚、看到板块、等它稳定后再抓”的步骤。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag rose">组件定位</span>
+              <b>看见卡片不代表数据已经出来</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>有时页面标题、卡片和图表已经出现，但表格数据还是空的，容易误判为没有数据。</div>
+              <div><strong>处理：</strong>把判断标准从“页面上看到了文字”改为“表格和图表数据已经稳定出现”，避免半加载状态下提前取数。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag">接口加密</span>
+              <b>直接拿接口数据不顺利</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>一开始尝试直接拿数据，但发现接口结果不稳定，部分内容不是可以直接使用的明文。</div>
+              <div><strong>处理：</strong>改为先让浏览器正常打开页面，等平台自己把数据展示出来，再读取页面里已经整理好的结果，优先保证业务交付可行。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag green">字段口径</span>
+              <b>不同板块字段不一样</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>直播、视频、商品、达人趋势的字段并不完全一致，有些字段平台本身就没有提供。</div>
+              <div><strong>处理：</strong>整理字段口径说明，统一缺失值文案，同时保留原始展示值，避免为了凑齐字段而误导阅读者。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag gold">运行诊断</span>
+              <b>跑完后不知道哪一步失败</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>总控脚本失败时，如果只看最终结果，很难知道是登录失败、页面没加载、板块没出现，还是某个模块没有数据。</div>
+              <div><strong>处理：</strong>每轮运行都输出 RUN_SUMMARY 和 manifest，把成功模块、失败模块和是否适合发布记录下来，方便复盘。</div>
+            </div>
+          </article>
+
+          <article class="issue-card">
+            <div class="issue-name">
+              <span class="tag rose">文件管理</span>
+              <b>版本文件越来越多</b>
+            </div>
+            <div class="issue-text">
+              <div><strong>现象：</strong>过程中生成了很多脚本、数据和看板版本，后期容易不知道哪一版可以用于正式周报。</div>
+              <div><strong>处理：</strong>按业务线、周次和运行批次管理文件，用 latest-success 标记最新可用版本，并把正式输出和调试版本区分开。</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="result">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">03 我做成了什么成果</div>
+          <h2>我跑通了从数据抓取、整理、看板展示到飞书摘要推送的完整流程</h2>
+          <p class="section-lead">
+            这里嵌入单个脱敏后的页面形态，用于展示重点模块展开后的趋势图、表格明细和阅读方式。示例数据均为随机数据，只展示页面结构和阅读方式。
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <article class="showcase-card">
+            <div class="showcase-head">
+              <div>
+                <h3>单独板块看板</h3>
+                <p>页面聚焦单人 30 日销售额模块，保留筛选、摘要、趋势图、明细表和数据状态，适合展开重点问题。</p>
+              </div>
+            </div>
+            <div class="preview-scale-viewport" id="dashboardScaleViewport">
+              <div class="preview-scale-stage" id="dashboardScaleStage">
+                <div class="preview-shell dashboard-fixed">
+              <div class="preview-toolbar">
+                <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span>单板块脱敏看板预览</span>
+              </div>
+              <iframe id="embedded-dashboard-preview" class="preview-frame compact" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;zh-CN&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot; /&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+  &lt;title&gt;视频课竞品周报 · 脱敏原版样式&lt;/title&gt;
+  &lt;style&gt;
+    :root {
+      --bg: #f5f7fb;
+      --card: rgba(255,255,255,0.96);
+      --line: #e6ebf2;
+      --text: #18212f;
+      --muted: #5f6b7a;
+      --blue: #264a7a;
+      --blue-2: #3d6ba8;
+      --green: #2f7d57;
+      --red: #b44b5c;
+      --highlight: #fbf7ef;
+      --shadow: 0 10px 30px rgba(21, 32, 53, 0.06);
+      --shadow-hover: 0 14px 34px rgba(21, 32, 53, 0.10);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, &quot;SF Pro Text&quot;, &quot;PingFang SC&quot;, &quot;Segoe UI&quot;, sans-serif;
+      background: linear-gradient(180deg, #f7f9fc 0%, #f3f6fa 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    a { color: var(--blue-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .page { max-width: 1360px; margin: 0 auto; padding: 32px 24px 80px; }
+    .hero, .summary-box, .insight-box, .card, .section, .footer-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease, background-color .18s ease;
+    }
+    .hero:hover, .summary-box:hover, .insight-box:hover, .card:hover, .section:hover, .footer-box:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: #d8e3ef;
+      background: rgba(255,255,255,0.985);
+      transform: translateY(-1px);
+    }
+    .hero {
+      padding: 36px;
+      margin-bottom: 28px;
+      background: radial-gradient(circle at top left, rgba(61,107,168,0.10), transparent 35%), var(--card);
+    }
+    .eyebrow { color: var(--blue); font-weight: 700; letter-spacing: .04em; font-size: 13px; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: 42px; line-height: 1.15; }
+    .subtitle { color: var(--muted); font-size: 16px; max-width: 960px; }
+    .hero-grid { display: grid; grid-template-columns: 1.45fr .95fr; gap: 24px; margin-top: 26px; }
+    .summary-box, .insight-box { padding: 24px; }
+    .summary-box ul, .insight-box ul { margin: 10px 0 0 18px; padding: 0; }
+    .metric-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 14px; margin: 24px 0 14px; }
+    .metric { padding: 18px; }
+    .metric .label { color: var(--muted); font-size: 13px; }
+    .metric .value { margin-top: 8px; font-size: 26px; font-weight: 700; }
+    .metric .note { margin-top: 6px; font-size: 12px; color: var(--muted); }
+    .tag { display:inline-flex; padding:4px 10px; border-radius:999px; font-size:12px; background:#eef3f9; color:#49627d; }
+    .anchor-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .anchor-nav a { padding: 8px 14px; border-radius: 999px; background: #eef3f9; color: var(--blue); font-size: 13px; }
+    .section { padding: 30px; margin-top: 24px; }
+    .section-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom: 18px; }
+    .section h2 { margin: 0; font-size: 30px; }
+    .section .desc { color: var(--muted); margin-top: 8px; max-width: 960px; }
+    .backtop { font-size: 13px; color: var(--muted); white-space: nowrap; }
+    .grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .mini-card { padding: 20px; }
+    .mini-card h3 { margin:0 0 10px; font-size: 18px; }
+    .mini-card p, .mini-card li { color: var(--muted); }
+    .chart-card { padding: 16px; border: 1px solid var(--line); border-radius: 22px; background: linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%); margin-top: 18px; }
+    .chart-frame { width: 100%; border: none; border-radius: 12px; background: transparent; display: block; overflow: hidden; }
+    .chart-frame.primary { height: min(400px, 36vw); }
+    .chart-frame.secondary { height: min(400px, 36vw); }
+    .chart-frame.author-compact { height: min(380px, 34vw); }
+    .chart-note { display:none; }
+    .inline-links { display:none; }
+    .inline-links a, .control-btn {
+      font-size: 13px;
+      background:#f5f7fb;
+      border:1px solid #e1e7ef;
+      padding:8px 12px;
+      border-radius:999px;
+      color:#49627d;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .table-toolbar { display:flex; justify-content:flex-end; margin-top:18px; gap:10px; }
+    .table-wrap { overflow:auto; border: 1px solid var(--line); border-radius: 16px; margin-top: 10px; }
+    table { width:100%; border-collapse: collapse; min-width: 820px; background: #fff; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align:left; vertical-align: top; font-size: 14px; }
+    th { background:#f8fafc; color:#5f6e7e; font-weight:600; }
+    tbody tr:hover td { background:#eef4fb; transition: background-color .15s ease; }
+    .positive { color: var(--red); font-weight: 600; }
+    .negative { color: var(--green); font-weight: 600; }
+    .sydney-row td { background: var(--highlight); }
+    .sydney-row:hover td { background: #f4efe5; }
+    .sydney-name { color:#b39a6a; font-weight:600; }
+    .trend-table-grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 10px; }
+    .trend-note-anchor { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+    .trend-note-dot {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #eef3f9; color: #49627d; font-size: 10px; line-height: 16px; cursor: pointer;
+      border: 1px solid #d9e5f2; flex: 0 0 auto;
+    }
+    .trend-note-popup {
+      position: fixed; z-index: 9999; display: none;
+      min-width: 120px; max-width: 240px;
+      background: rgba(24,33,47,.94); color: white; font-size: 12px; line-height: 1.4;
+      padding: 8px 10px; border-radius: 10px; white-space: normal; text-align: left;
+      box-shadow: 0 10px 24px rgba(0,0,0,.16); pointer-events: none;
+    }
+    .trend-axis-tip {
+      display:inline-flex; align-items:center; gap:6px; margin-top:10px; color:var(--muted); font-size:12px;
+      background:#f7fafc; border:1px solid #e4ebf3; border-radius:999px; padding:6px 10px;
+    }
+    .trend-axis-tip .mark {
+      display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%;
+      background:#eef3f9; color:#49627d; font-weight:700; font-size:11px;
+    }
+    .footer-box { margin-top: 28px; padding: 22px 24px; font-size: 13px; color: var(--muted); }
+    .fab-wrap { position: fixed; right: 22px; bottom: 22px; z-index: 40; }
+    .fab-btn {
+      width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(24,33,47,0.88); color: white; font-size: 22px; box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    }
+    .fab-panel {
+      position: absolute; right: 0; bottom: 66px; width: 220px; display: none;
+      background: rgba(255,255,255,.98); border: 1px solid #dfe7f0; border-radius: 18px;
+      box-shadow: 0 16px 36px rgba(17,24,39,.12); padding: 10px;
+    }
+    .fab-panel.active { display: block; }
+    .fab-panel a { display:block; padding:9px 10px; border-radius:10px; color:#24313f; font-size:13px; text-decoration:none; }
+    .fab-panel a:hover { background:#f4f7fb; }
+    @media (max-width: 1100px) {
+      .hero-grid, .grid-2, .metric-grid, .trend-table-grid { grid-template-columns: 1fr; }
+      .chart-frame.primary { height: 360px; }
+      .chart-frame.secondary { height: 360px; }
+      .chart-frame.author-compact { height: 340px; }
+    }
+    @media (max-width: 720px) {
+      .page { padding: 18px 14px 70px; }
+      .hero, .section { padding: 20px; }
+      h1 { font-size: 30px; }
+      .section h2 { font-size: 24px; }
+      .chart-frame.primary { height: 300px; }
+      .chart-frame.secondary { height: 300px; }
+      .chart-frame.author-compact { height: 280px; }
+      .fab-wrap { right: 16px; bottom: 16px; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class=&quot;page&quot; id=&quot;top&quot;&gt;
+    &lt;section class=&quot;hero&quot;&gt;
+      &lt;div class=&quot;eyebrow&quot;&gt;Weekly Report · Video Course&lt;/div&gt;
+      &lt;h1&gt;视频课竞品周报 · 脱敏原版样式&lt;/h1&gt;
+      &lt;div class=&quot;subtitle&quot;&gt;
+        本页保留原 v15 看板的页面结构、图表区域、表格布局和展开交互，仅将真实账号、商品、链接与数值替换为脱敏随机示例。
+      &lt;/div&gt;
+
+      &lt;div class=&quot;metric-grid&quot;&gt;
+        &lt;div class=&quot;card metric&quot;&gt;&lt;div class=&quot;label&quot;&gt;周次&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;2026-W14&lt;/div&gt;&lt;div class=&quot;note&quot;&gt;03/24 - 03/30&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;card metric&quot;&gt;&lt;div class=&quot;label&quot;&gt;对标账号数&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;16&lt;/div&gt;&lt;div class=&quot;note&quot;&gt;销售趋势为 16 账号聚合口径&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;card metric&quot;&gt;&lt;div class=&quot;label&quot;&gt;本周新开直播&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;20&lt;/div&gt;&lt;div class=&quot;note&quot;&gt;图表与表格均已补齐 20 条直播明细&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;card metric&quot;&gt;&lt;div class=&quot;label&quot;&gt;本周新发视频&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;20&lt;/div&gt;&lt;div class=&quot;note&quot;&gt;图表与表格均已补齐 20 条视频明细&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;card metric&quot;&gt;&lt;div class=&quot;label&quot;&gt;本周新上架商品&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;20&lt;/div&gt;&lt;div class=&quot;note&quot;&gt;图表与表格均已补齐 20 条商品明细&lt;/div&gt;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;hero-grid&quot;&gt;
+        &lt;div class=&quot;summary-box&quot;&gt;
+          &lt;div class=&quot;tag&quot;&gt;本周总览结论&lt;/div&gt;
+          &lt;ul&gt;
+            &lt;li&gt;&lt;strong&gt;对标账号A&lt;/strong&gt;仍是当前样本中的高表现账号，近 7 天销售额区间位于 &lt;strong&gt;250w~500w&lt;/strong&gt;。&lt;/li&gt;
+            &lt;li&gt;16 个对标账号聚合的近 30 天趋势整体抬升，月末较月初有明显增长。&lt;/li&gt;
+            &lt;li&gt;&lt;strong&gt;3 月 27 日&lt;/strong&gt;为阶段峰值，示例销售额约为 &lt;strong&gt;412.8w&lt;/strong&gt;，次日有所回落。&lt;/li&gt;
+            &lt;li&gt;直播、视频与商品模块均保持活跃，结果验证主要集中在少数重点账号。&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;insight-box&quot;&gt;
+          &lt;div class=&quot;tag&quot;&gt;下周观察点&lt;/div&gt;
+          &lt;ul&gt;
+            &lt;li&gt;继续观察 &lt;strong&gt;对标账号A&lt;/strong&gt; 的商品与直播联动，判断高位表现是否可持续。&lt;/li&gt;
+            &lt;li&gt;重点观察 &lt;strong&gt;对标账号B&lt;/strong&gt;、&lt;strong&gt;重点账号I&lt;/strong&gt; 等第二梯队账号是否出现新的放量动作。&lt;/li&gt;
+            &lt;li&gt;重点账号在各模块中统一使用轻高亮规则，便于跨模块连续观察。&lt;/li&gt;
+            &lt;li&gt;后续可继续补齐逐账号趋势数据，让看板支持更多自助对比。&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;anchor-nav&quot;&gt;
+        &lt;a href=&quot;#top&quot;&gt;返回项目展示页&lt;/a&gt;
+        &lt;a href=&quot;#author-sales&quot;&gt;达人销售&lt;/a&gt;
+        &lt;a href=&quot;#trend&quot;&gt;聚合趋势&lt;/a&gt;
+        &lt;a href=&quot;#live&quot;&gt;新开直播&lt;/a&gt;
+        &lt;a href=&quot;#video&quot;&gt;新发视频&lt;/a&gt;
+        &lt;a href=&quot;#goods&quot;&gt;新上架商品&lt;/a&gt;
+        &lt;a href=&quot;#deal&quot;&gt;热销商品视频&lt;/a&gt;
+        &lt;a href=&quot;#analysis&quot;&gt;分析探索&lt;/a&gt;
+        &lt;a href=&quot;#version&quot;&gt;版本说明&lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    
+
+    &lt;section class=&quot;section&quot; id=&quot;author-sales&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;近7日达人销售概况&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;图表展示当前产物中已抓取到真实销售额结果的达人。模块结构固定为：模块说明 → 关键观察 → 通栏图表 → 右对齐操作按钮 → 同表展开主表。&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;mini-card card&quot;&gt;
+        &lt;h3&gt;关键观察&lt;/h3&gt;
+        &lt;ul&gt;
+          &lt;li&gt;&lt;strong&gt;对标账号A&lt;/strong&gt; 与其后达人之间已经拉开明显量级差。&lt;/li&gt;
+          &lt;li&gt;当前图中只纳入已抓取到真实销售额结果的达人；重点观察账号在表格中统一使用轻高亮，不额外加文字标签。&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-card&quot;&gt;
+        &lt;iframe class=&quot;chart-frame author-compact&quot; srcdoc=&quot;&amp;lt;!doctype html&amp;gt;
+&amp;lt;html lang=&amp;quot;zh-CN&amp;quot;&amp;gt;
+&amp;lt;head&amp;gt;
+  &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot; /&amp;gt;
+  &amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width, initial-scale=1.0&amp;quot; /&amp;gt;
+  &amp;lt;title&amp;gt;达人销售图表独立版 v6m&amp;lt;/title&amp;gt;
+  &amp;lt;style&amp;gt;
+    html,body{margin:0;padding:0;background:#f6f8fb;color:#1b2430;font-family:-apple-system,BlinkMacSystemFont,&amp;quot;SF Pro Text&amp;quot;,&amp;quot;PingFang SC&amp;quot;,&amp;quot;Segoe UI&amp;quot;,sans-serif}
+    .wrap{padding:12px}
+    .panel{width:min(100%,1100px);margin:0 auto;background:rgba(255,255,255,.96);border:1px solid #e7ecf3;border-radius:22px;box-shadow:0 10px 30px rgba(30,41,59,.04);padding:16px}
+    #chart{width:100%;height:clamp(240px,34vw,360px);background:transparent;border-radius:12px}
+  &amp;lt;/style&amp;gt;
+  &amp;lt;script src=&amp;quot;https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+  &amp;lt;div class=&amp;quot;wrap&amp;quot;&amp;gt;
+    &amp;lt;div class=&amp;quot;panel&amp;quot;&amp;gt;
+      &amp;lt;div id=&amp;quot;chart&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;
+    &amp;lt;/div&amp;gt;
+  &amp;lt;/div&amp;gt;
+  &amp;lt;script&amp;gt;
+    const labels=[&amp;quot;对标账号A&amp;quot;,&amp;quot;对标账号B&amp;quot;,&amp;quot;对标账号C&amp;quot;,&amp;quot;对标账号D&amp;quot;,&amp;quot;对标账号E&amp;quot;];
+    const values=[3260000,1760000,920000,760000,520000];
+    const chart=echarts.init(document.getElementById('chart'));
+    chart.setOption({backgroundColor:'transparent',title:{text:'近7日达人销售概况',left:'center',top:8,textStyle:{color:'#24313f',fontSize:16,fontWeight:600}},tooltip:{trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(120,140,160,.05)'}},backgroundColor:'rgba(255,255,255,.98)',borderColor:'#e6ecf2',borderWidth:1,textStyle:{color:'#24313f'},extraCssText:'box-shadow:0 10px 24px rgba(30,41,59,.08);border-radius:12px;',formatter:p=&amp;gt;{const item=p[0];return item.name+'&amp;lt;br/&amp;gt;近7天销售额：'+(item.value/10000).toFixed(1)+'w';}},grid:{left:76,right:24,top:52,bottom:68},xAxis:{type:'category',data:labels,axisLabel:{interval:0,rotate:16,color:'#718096',fontSize:11},axisLine:{lineStyle:{color:'#dbe4ee'}},axisTick:{show:false}},yAxis:{type:'value',name:'销售额（w）',nameTextStyle:{color:'#718096',fontSize:11},axisLabel:{color:'#718096',formatter:v=&amp;gt;(v/10000).toFixed(0)+'w'},splitLine:{lineStyle:{color:'#f1f5f9'}},axisLine:{show:false}},series:[{type:'bar',barMaxWidth:36,label:{show:true,position:'top',color:'#4a6078',fontWeight:600,fontSize:11,formatter:p=&amp;gt;(p.value/10000).toFixed(1)+'w'},itemStyle:{borderRadius:[10,10,0,0],color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#9ab2c9'},{offset:1,color:'#5f7892'}])},emphasis:{itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#efe5d0'},{offset:1,color:'#ddcfb0'}]),shadowBlur:14,shadowColor:'rgba(60,70,85,.12)'}},data:values}]});
+    window.addEventListener('resize',()=&amp;gt;chart.resize());
+  &amp;lt;/script&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;
+&quot;&gt;&lt;/iframe&gt;
+        &lt;div class=&quot;chart-note&quot;&gt;达人销售 iframe 内外层都已同步缩放，窗口变化时不会再出现外层缩小、内层仍旧过大的割裂感。&lt;/div&gt;
+        &lt;div class=&quot;inline-links&quot;&gt;
+          &lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;单独显示图表&lt;/a&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-toolbar&quot;&gt;
+        &lt;button id=&quot;toggleAuthorRowsBtn&quot; class=&quot;control-btn&quot;&gt;展开完整表格&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-toolbar&quot;&gt;
+        &lt;button id=&quot;toggleDealRowsBtn&quot; class=&quot;control-btn&quot;&gt;展开完整表格&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-wrap&quot;&gt;
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;达人&lt;/th&gt;
+              &lt;th&gt;近7天销售额（量级带）&lt;/th&gt;
+              &lt;th&gt;近7天销售额（真实值）&lt;/th&gt;
+              &lt;th&gt;销售额环比&lt;/th&gt;
+              &lt;th&gt;直播场次&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;86.4w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+8.5%&lt;/td&gt;&lt;td&gt;6&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;81.7w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-11.6%&lt;/td&gt;&lt;td&gt;5&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;77.0w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+14.7%&lt;/td&gt;&lt;td&gt;4&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;72.3w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+17.8%&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号E&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;67.6w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-20.9%&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号F&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;62.9w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+24.0%&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号G&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;58.2w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+27.1%&lt;/td&gt;&lt;td&gt;6&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号H&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;53.5w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-30.2%&lt;/td&gt;&lt;td&gt;5&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号I&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;48.8w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+33.3%&lt;/td&gt;&lt;td&gt;4&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号J&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;44.1w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+36.4%&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号K&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;39.4w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-39.5%&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号L&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;34.7w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+42.6%&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;内容账号M&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;30.0w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+45.7%&lt;/td&gt;&lt;td&gt;6&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;课程账号N&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;25.3w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-48.8%&lt;/td&gt;&lt;td&gt;5&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;图书账号O&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;20.6w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+51.9%&lt;/td&gt;&lt;td&gt;4&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;author-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;直播账号P&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;15.9w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+55.0%&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;section&quot; id=&quot;trend&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;近30天聚合销售趋势&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;当前口径为 &lt;strong&gt;2026 年 3 月&lt;/strong&gt; 的 16 个账号集合聚合近 30 天销售趋势。横坐标只保留月日，年份统一在模块说明中说明；下方销售表采用三栏并列，并补齐“较前一天变化”列，方便快速识别波动。&lt;/div&gt;
+          &lt;div class=&quot;trend-axis-tip&quot;&gt;&lt;span class=&quot;mark&quot;&gt;↔&lt;/span&gt;&lt;span&gt;横轴为日期（月-日），纵轴为销售额（w）&lt;/span&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;mini-card card&quot;&gt;
+        &lt;h3&gt;关键观察&lt;/h3&gt;
+        &lt;ul&gt;
+          &lt;li&gt;&lt;strong&gt;3 月 27 日&lt;/strong&gt;仍是当前近30天聚合销售额的阶段峰值，约 &lt;strong&gt;735.7w&lt;/strong&gt;。&lt;/li&gt;
+          &lt;li&gt;表格新增&lt;strong&gt;较前一天变化&lt;/strong&gt;列，统一采用&lt;strong&gt;增加红色、减少绿色&lt;/strong&gt;，便于快速识别波动方向。&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-card&quot;&gt;
+        &lt;iframe class=&quot;chart-frame primary&quot; srcdoc=&quot;&amp;lt;!DOCTYPE html&amp;gt;
+&amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
+  &amp;lt;head&amp;gt;
+    &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot; /&amp;gt;
+    &amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width, initial-scale=1.0&amp;quot; /&amp;gt;
+    &amp;lt;title&amp;gt;ECharts Preview&amp;lt;/title&amp;gt;
+    &amp;lt;script src=&amp;quot;https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;
+    &amp;lt;style&amp;gt;
+      html, body { margin: 0; padding: 0; background: #f3f5f7; font-family: &amp;quot;Segoe UI&amp;quot;, sans-serif; }
+      .wrap { padding: 12px; }
+      #chart {
+        width: min(100%, 920px);
+        height: clamp(320px, 36vw, 400px);
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.10);
+      }
+    &amp;lt;/style&amp;gt;
+  &amp;lt;/head&amp;gt;
+  &amp;lt;body&amp;gt;
+    &amp;lt;div class=&amp;quot;wrap&amp;quot;&amp;gt;
+      &amp;lt;div id=&amp;quot;chart&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;
+    &amp;lt;/div&amp;gt;
+    &amp;lt;script&amp;gt;
+      const el = document.getElementById(&amp;quot;chart&amp;quot;);
+      const chart = echarts.init(el);
+      const xData = [
+        &amp;quot;20260301&amp;quot;,&amp;quot;20260302&amp;quot;,&amp;quot;20260303&amp;quot;,&amp;quot;20260304&amp;quot;,&amp;quot;20260305&amp;quot;,&amp;quot;20260306&amp;quot;,&amp;quot;20260307&amp;quot;,&amp;quot;20260308&amp;quot;,&amp;quot;20260309&amp;quot;,&amp;quot;20260310&amp;quot;,
+        &amp;quot;20260311&amp;quot;,&amp;quot;20260312&amp;quot;,&amp;quot;20260313&amp;quot;,&amp;quot;20260314&amp;quot;,&amp;quot;20260315&amp;quot;,&amp;quot;20260316&amp;quot;,&amp;quot;20260317&amp;quot;,&amp;quot;20260318&amp;quot;,&amp;quot;20260319&amp;quot;,&amp;quot;20260320&amp;quot;,
+        &amp;quot;20260321&amp;quot;,&amp;quot;20260322&amp;quot;,&amp;quot;20260323&amp;quot;,&amp;quot;20260324&amp;quot;,&amp;quot;20260325&amp;quot;,&amp;quot;20260326&amp;quot;,&amp;quot;20260327&amp;quot;,&amp;quot;20260328&amp;quot;,&amp;quot;20260329&amp;quot;,&amp;quot;20260330&amp;quot;
+      ];
+      const yData = [1186000,1862000,1437000,2245000,1981000,2524000,1769000,2053000,2896000,2408000,2665000,2194000,1887000,1563000,1722000,3189000,2465000,3027000,2614000,2958000,2106000,2321000,2769000,3384000,2862000,2417000,4128000,2685000,2913000,3569000];
+      function fmtDate(s) { return s.slice(4,6) + '-' + s.slice(6,8); }
+      function fmtW(v) { return (v / 10000).toFixed(1) + 'w'; }
+      const option = {
+        title: { text: '近30天聚合销售趋势', left: 'center', top: 10, textStyle: { fontSize: 16, fontWeight: 600, color: '#24313f' } },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#fff',
+          borderColor: '#dfe7f0',
+          borderWidth: 1,
+          textStyle: { color: '#24313f' },
+          formatter: (params) =&amp;gt; {
+            const p = params[0];
+            const rawDate = xData[p.dataIndex];
+            const label = rawDate.slice(0,4) + '-' + rawDate.slice(4,6) + '-' + rawDate.slice(6,8);
+            return `${label}&amp;lt;br/&amp;gt;聚合销售额：${fmtW(p.value)}`;
+          }
+        },
+        grid: { left: 72, right: 28, top: 56, bottom: 52 },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: xData,
+          axisLabel: {
+            color: '#5f6b7a',
+            formatter: (value, index) =&amp;gt; index % 4 === 0 ? fmtDate(value) : '',
+            margin: 14
+          },
+          axisLine: { lineStyle: { color: '#d9e2ec' } },
+          axisTick: { show: false }
+        },
+        yAxis: {
+          type: 'value',
+          name: '销售额（w）',
+          nameTextStyle: { color: '#5f6b7a', padding: [0, 0, 0, 8] },
+          axisLabel: { color: '#5f6b7a', formatter: (value) =&amp;gt; (value / 10000).toFixed(0) + 'w' },
+          splitLine: { lineStyle: { color: '#edf2f7' } },
+          axisLine: { show: false }
+        },
+        series: [{
+          name: '聚合销售额',
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 6,
+          data: yData,
+          lineStyle: { width: 3, color: '#4d6f97' },
+          itemStyle: { color: '#4d6f97' },
+          areaStyle: { color: 'rgba(77,111,151,0.08)' },
+          emphasis: { itemStyle: { color: '#d4c29f' }, lineStyle: { color: '#b79c67' } }
+        }]
+      };
+      chart.setOption(option);
+      window.addEventListener('resize', () =&amp;gt; chart.resize());
+    &amp;lt;/script&amp;gt;
+  &amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;
+&quot;&gt;&lt;/iframe&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;trend-table-grid&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;thead&gt;&lt;tr&gt;&lt;th&gt;日期&lt;/th&gt;&lt;th&gt;聚合销售额&lt;/th&gt;&lt;th&gt;较前一天变化&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+            &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;03-01&lt;/td&gt;&lt;td&gt;118.6w&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-02&lt;/td&gt;&lt;td&gt;186.2w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+67.6w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-03&lt;/td&gt;&lt;td&gt;143.7w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-42.5w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-04&lt;/td&gt;&lt;td&gt;224.5w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+80.8w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-05&lt;/td&gt;&lt;td&gt;198.1w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-26.4w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-06&lt;/td&gt;&lt;td&gt;252.4w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+54.3w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-07&lt;/td&gt;&lt;td&gt;176.9w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-75.5w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-08&lt;/td&gt;&lt;td&gt;205.3w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+28.4w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-09&lt;/td&gt;&lt;td&gt;289.6w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+84.3w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-10&lt;/td&gt;&lt;td&gt;240.8w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-48.8w&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;thead&gt;&lt;tr&gt;&lt;th&gt;日期&lt;/th&gt;&lt;th&gt;聚合销售额&lt;/th&gt;&lt;th&gt;较前一天变化&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+            &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;03-11&lt;/td&gt;&lt;td&gt;266.5w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+25.7w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-12&lt;/td&gt;&lt;td&gt;219.4w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-47.1w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-13&lt;/td&gt;&lt;td&gt;188.7w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-30.7w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-14&lt;/td&gt;&lt;td&gt;156.3w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-32.4w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-15&lt;/td&gt;&lt;td&gt;172.2w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+15.9w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-16&lt;/td&gt;&lt;td&gt;318.9w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+146.7w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-17&lt;/td&gt;&lt;td&gt;246.5w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-72.4w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-18&lt;/td&gt;&lt;td&gt;302.7w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+56.2w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-19&lt;/td&gt;&lt;td&gt;261.4w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-41.3w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-20&lt;/td&gt;&lt;td&gt;295.8w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+34.4w&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;thead&gt;&lt;tr&gt;&lt;th&gt;日期&lt;/th&gt;&lt;th&gt;聚合销售额&lt;/th&gt;&lt;th&gt;较前一天变化&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+            &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;03-21&lt;/td&gt;&lt;td&gt;210.6w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-85.2w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-22&lt;/td&gt;&lt;td&gt;232.1w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+21.5w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-23&lt;/td&gt;&lt;td&gt;276.9w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+44.8w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-24&lt;/td&gt;&lt;td&gt;338.4w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+61.5w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-25&lt;/td&gt;&lt;td&gt;286.2w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-52.2w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-26&lt;/td&gt;&lt;td&gt;241.7w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-44.5w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-27&lt;/td&gt;&lt;td&gt;412.8w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+171.1w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-28&lt;/td&gt;&lt;td&gt;268.5w&lt;/td&gt;&lt;td class=&quot;negative&quot;&gt;-144.3w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-29&lt;/td&gt;&lt;td&gt;291.3w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+22.8w&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;03-30&lt;/td&gt;&lt;td&gt;356.9w&lt;/td&gt;&lt;td class=&quot;positive&quot;&gt;+65.6w&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;section&quot; id=&quot;live&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;新开直播&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;这是直播行为观察模块。当前优先看谁在播、播了什么、观看人次是否起量，用于解释整体销售变化中的直播因素。&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;grid-2&quot;&gt;
+        &lt;div class=&quot;card mini-card&quot;&gt;
+          &lt;h3&gt;关键观察&lt;/h3&gt;
+          &lt;ul&gt;
+            &lt;li&gt;本周共抓到 &lt;strong&gt;20 场&lt;/strong&gt; 新开直播，图表与表格均已补齐完整明细。&lt;/li&gt;
+            &lt;li&gt;观看人次最高的是 &lt;strong&gt;对标账号A｜好方法 好书&lt;/strong&gt;，达到 &lt;strong&gt;94,192&lt;/strong&gt;；图表与表格现已按同一份 20 条直播明细排序。&lt;/li&gt;
+            &lt;li&gt;直播模块更适合保留“观看人次”等直观指标，峰值在线等复杂字段暂放分析探索层处理。&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;card mini-card&quot;&gt;
+          &lt;h3&gt;模块说明&lt;/h3&gt;
+          &lt;ul&gt;
+            &lt;li&gt;当前以行为解释为主，不替代达人销售概况。&lt;/li&gt;
+            &lt;li&gt;图表与明细表分工明确：图表看行为强弱，表格做事实核对。&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-card&quot;&gt;
+        &lt;iframe class=&quot;chart-frame secondary&quot; srcdoc=&quot;&amp;lt;!doctype html&amp;gt;&amp;lt;html lang=&amp;quot;zh-CN&amp;quot;&amp;gt;&amp;lt;head&amp;gt;&amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;/&amp;gt;&amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width,initial-scale=1&amp;quot;/&amp;gt;&amp;lt;script src=&amp;quot;https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;&amp;lt;style&amp;gt;html,body,#c{margin:0;width:100%;height:100%;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',sans-serif;}&amp;lt;/style&amp;gt;&amp;lt;/head&amp;gt;&amp;lt;body&amp;gt;&amp;lt;div id=&amp;quot;c&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;script&amp;gt;
+const chart=echarts.init(document.getElementById('c'));
+const cats=[&amp;quot;对标账号A｜学习方法直播示例A&amp;quot;,&amp;quot;对标账号B｜专项训练营直播示例B&amp;quot;,&amp;quot;对标账号C｜课程体验直播示例C&amp;quot;,&amp;quot;对标账号D｜阶段复盘直播示例D&amp;quot;,&amp;quot;对标账号E｜资料讲解直播示例E&amp;quot;,&amp;quot;对标账号F｜答疑直播示例F&amp;quot;,&amp;quot;对标账号G｜上新说明直播示例G&amp;quot;,&amp;quot;对标账号H｜学习规划直播示例H&amp;quot;,&amp;quot;重点账号I｜内容复盘直播示例I&amp;quot;,&amp;quot;重点账号J｜方法拆解直播示例J&amp;quot;,&amp;quot;对标账号K｜训练营说明直播K&amp;quot;,&amp;quot;对标账号L｜课程福利直播L&amp;quot;,&amp;quot;内容账号M｜专题讲解直播M&amp;quot;,&amp;quot;课程账号N｜基础答疑直播N&amp;quot;,&amp;quot;图书账号O｜周末加场直播O&amp;quot;,&amp;quot;直播账号P｜复习规划直播P&amp;quot;,&amp;quot;对标账号A｜商品讲解直播Q&amp;quot;,&amp;quot;对标账号B｜直播间活动示例R&amp;quot;,&amp;quot;对标账号C｜案例讲解直播S&amp;quot;,&amp;quot;对标账号D｜学习路径直播T&amp;quot;];
+const vals=[94200,90100,86000,81900,77800,73700,69600,65500,61400,57300,53200,49100,45000,40900,36800,32700,28600,24500,20400,16300];
+chart.setOption({
+ animation:false,
+ title:{text:'新开直播观看人次（Top 20）', left:12, top:8, textStyle:{fontSize:16,fontWeight:600,color:'#24313f'}},
+ grid:{left:220,right:36,top:52,bottom:24},
+ tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, formatter:(ps)=&amp;gt;{ const p=ps[0]; return p.name+'&amp;lt;br/&amp;gt;观看人次：'+String(p.value); }},
+ xAxis:{type:'value', name:'观看人次', axisLabel:{color:'#617181'}, splitLine:{lineStyle:{color:'#edf1f5'}}},
+ yAxis:{type:'category', data:cats, axisLabel:{color:'#24313f', width:200, overflow:'truncate'}},
+ series:[{name:'观看人次', type:'bar', data:vals, barMaxWidth:22, itemStyle:{borderRadius:[0,8,8,0], color:new echarts.graphic.LinearGradient(1,0,0,0,[{offset:0,color:'#5f7892'},{offset:1,color:'#9ab2c9'}])}, emphasis:{itemStyle:{color:new echarts.graphic.LinearGradient(1,0,0,0,[{offset:0,color:'#ddcfb0'},{offset:1,color:'#efe5d0'}]), shadowBlur:14, shadowColor:'rgba(60,70,85,.12)'}}, label:{show:true, position:'right', color:'#4b5b6a'} }]
+}); window.addEventListener('resize',()=&amp;gt;chart.resize());
+&amp;lt;/script&amp;gt;&amp;lt;/body&amp;gt;&amp;lt;/html&amp;gt;&quot;&gt;&lt;/iframe&gt;
+        &lt;div class=&quot;chart-note&quot;&gt;该 iframe 已同步改为响应式宽高，窗口变化时图本身也会一起缩放。&lt;/div&gt;
+        &lt;div class=&quot;inline-links&quot;&gt;
+          &lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;单独显示图表&lt;/a&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-toolbar&quot;&gt;
+        &lt;button id=&quot;toggleLiveRowsBtn&quot; class=&quot;control-btn&quot;&gt;展开完整表格&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-wrap&quot;&gt;
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;开播达人&lt;/th&gt;
+              &lt;th&gt;直播标题&lt;/th&gt;
+              &lt;th&gt;销售额&lt;/th&gt;
+              &lt;th&gt;观看人次&lt;/th&gt;
+              &lt;th&gt;开播时间&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;学习方法直播示例A&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;94200&lt;/td&gt;&lt;td&gt;04-01 08:00&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;专项训练营直播示例B&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;90100&lt;/td&gt;&lt;td&gt;04-02 09:07&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;课程体验直播示例C&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;86000&lt;/td&gt;&lt;td&gt;04-03 10:14&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;阶段复盘直播示例D&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;81900&lt;/td&gt;&lt;td&gt;04-04 11:21&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号E&lt;/td&gt;&lt;td&gt;资料讲解直播示例E&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;77800&lt;/td&gt;&lt;td&gt;04-05 12:28&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号F&lt;/td&gt;&lt;td&gt;答疑直播示例F&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;73700&lt;/td&gt;&lt;td&gt;04-06 13:35&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号G&lt;/td&gt;&lt;td&gt;上新说明直播示例G&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;69600&lt;/td&gt;&lt;td&gt;04-07 14:42&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号H&lt;/td&gt;&lt;td&gt;学习规划直播示例H&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;65500&lt;/td&gt;&lt;td&gt;04-01 15:49&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号I&lt;/td&gt;&lt;td&gt;内容复盘直播示例I&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;61400&lt;/td&gt;&lt;td&gt;04-02 16:56&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号J&lt;/td&gt;&lt;td&gt;方法拆解直播示例J&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;57300&lt;/td&gt;&lt;td&gt;04-03 17:03&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号K&lt;/td&gt;&lt;td&gt;训练营说明直播K&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;53200&lt;/td&gt;&lt;td&gt;04-04 18:10&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号L&lt;/td&gt;&lt;td&gt;课程福利直播L&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;49100&lt;/td&gt;&lt;td&gt;04-05 19:17&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;内容账号M&lt;/td&gt;&lt;td&gt;专题讲解直播M&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;45000&lt;/td&gt;&lt;td&gt;04-06 08:24&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;课程账号N&lt;/td&gt;&lt;td&gt;基础答疑直播N&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;40900&lt;/td&gt;&lt;td&gt;04-07 09:31&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;图书账号O&lt;/td&gt;&lt;td&gt;周末加场直播O&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;36800&lt;/td&gt;&lt;td&gt;04-01 10:38&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;直播账号P&lt;/td&gt;&lt;td&gt;复习规划直播P&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;32700&lt;/td&gt;&lt;td&gt;04-02 11:45&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;商品讲解直播Q&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;28600&lt;/td&gt;&lt;td&gt;04-03 12:52&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;直播间活动示例R&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;24500&lt;/td&gt;&lt;td&gt;04-04 13:59&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;案例讲解直播S&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;20400&lt;/td&gt;&lt;td&gt;04-05 14:06&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;live-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;学习路径直播T&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;16300&lt;/td&gt;&lt;td&gt;04-06 15:13&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;section&quot; id=&quot;video&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;新发视频&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;这是内容动作观察模块。当前以互动表现和内容方向为主，不再强调销售额字段，避免与达人销售概况和热销商品结果模块职责重叠。&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;mini-card card&quot;&gt;
+        &lt;h3&gt;关键观察&lt;/h3&gt;
+        &lt;ul&gt;
+          &lt;li&gt;本周共抓到 &lt;strong&gt;20 条&lt;/strong&gt; 新发视频，图表与表格均已补齐完整明细。&lt;/li&gt;
+          &lt;li&gt;互动最高的一条来自 &lt;strong class=&quot;sydney-name&quot;&gt;重点账号J&lt;/strong&gt;，点赞数达到 &lt;strong&gt;4227&lt;/strong&gt;；图表与表格现已按同一份原始 20 条视频数据排序。&lt;/li&gt;
+          &lt;li&gt;当前模块定位是“内容动作观察”，因此正式阅读态不再强调销售额字段；本轮已补齐完整 20 条视频明细，完整视频列表可通过右上角按钮展开查看。&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-card&quot;&gt;
+        &lt;iframe class=&quot;chart-frame secondary&quot; srcdoc=&quot;&amp;lt;!doctype html&amp;gt;&amp;lt;html lang=&amp;quot;zh-CN&amp;quot;&amp;gt;&amp;lt;head&amp;gt;&amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;/&amp;gt;&amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width,initial-scale=1&amp;quot;/&amp;gt;&amp;lt;script src=&amp;quot;https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;&amp;lt;style&amp;gt;html,body,#c{margin:0;width:100%;height:100%;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',sans-serif;}&amp;lt;/style&amp;gt;&amp;lt;/head&amp;gt;&amp;lt;body&amp;gt;&amp;lt;div id=&amp;quot;c&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;script&amp;gt;
+const chart=echarts.init(document.getElementById('c'));
+const cats=[&amp;quot;对标账号A｜学习方法短视频示例A&amp;quot;,&amp;quot;对标账号B｜课程方法讲解示例B&amp;quot;,&amp;quot;对标账号C｜高频问题答疑示例C&amp;quot;,&amp;quot;对标账号D｜直播预热视频示例D&amp;quot;,&amp;quot;对标账号E｜学习路径拆解示例E&amp;quot;,&amp;quot;对标账号F｜资料使用说明示例F&amp;quot;,&amp;quot;对标账号G｜知识点讲解示例G&amp;quot;,&amp;quot;对标账号H｜案例复盘短视频H&amp;quot;,&amp;quot;重点账号I｜阶段规划内容I&amp;quot;,&amp;quot;重点账号J｜选题测试内容J&amp;quot;,&amp;quot;对标账号K｜课程亮点说明K&amp;quot;,&amp;quot;对标账号L｜用户问题回应L&amp;quot;,&amp;quot;内容账号M｜复习方法内容M&amp;quot;,&amp;quot;课程账号N｜入门方法内容N&amp;quot;,&amp;quot;图书账号O｜直播切片内容O&amp;quot;,&amp;quot;直播账号P｜商品说明内容P&amp;quot;,&amp;quot;对标账号A｜内容测试样本Q&amp;quot;,&amp;quot;对标账号B｜话题互动内容R&amp;quot;,&amp;quot;对标账号C｜基础讲解内容S&amp;quot;,&amp;quot;对标账号D｜学习建议内容T&amp;quot;];
+const vals=[4220,4032,3844,3656,3468,3280,3092,2904,2716,2528,2340,2152,1964,1776,1588,1400,1212,1024,836,648];
+const wrap=(s,n=18)=&amp;gt;{ let out=''; for(let i=0;i&amp;lt;s.length;i+=n) out += (i?'\n':'') + s.slice(i,i+n); return out; };
+chart.setOption({
+ animation:false,
+ title:{text:'新发视频互动表现（Top 20）', left:12, top:8, textStyle:{fontSize:16,fontWeight:600,color:'#24313f'}},
+ grid:{left:320,right:36,top:52,bottom:24},
+ tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, formatter:(ps)=&amp;gt;{ const p=ps[0]; return p.name.replace(/｜/g,'&amp;lt;br/&amp;gt;')+'&amp;lt;br/&amp;gt;点赞：'+p.value; }},
+ xAxis:{type:'value', name:'点赞', axisLabel:{color:'#617181'}, splitLine:{lineStyle:{color:'#edf1f5'}}},
+ yAxis:{type:'category', data:cats, axisLabel:{color:'#24313f', width:300, overflow:'break', interval:0, formatter:(v)=&amp;gt;wrap(v,18)}},
+ series:[{name:'点赞', type:'bar', data:vals, barMaxWidth:22, itemStyle:{borderRadius:[0,8,8,0], color:new echarts.graphic.LinearGradient(1,0,0,0,[{offset:0,color:'#5f7892'},{offset:1,color:'#9ab2c9'}])}, emphasis:{itemStyle:{color:new echarts.graphic.LinearGradient(1,0,0,0,[{offset:0,color:'#ddcfb0'},{offset:1,color:'#efe5d0'}]), shadowBlur:14, shadowColor:'rgba(60,70,85,.12)'}}, label:{show:true, position:'right', color:'#4b5b6a'} }]
+}); window.addEventListener('resize',()=&amp;gt;chart.resize());
+&amp;lt;/script&amp;gt;&amp;lt;/body&amp;gt;&amp;lt;/html&amp;gt;&quot;&gt;&lt;/iframe&gt;
+              &lt;/div&gt;
+      &lt;div class=&quot;table-toolbar&quot;&gt;
+        &lt;button id=&quot;toggleVideoRowsBtn&quot; class=&quot;control-btn&quot;&gt;展开完整表格&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-wrap&quot;&gt;
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;达人&lt;/th&gt;
+              &lt;th&gt;视频标题&lt;/th&gt;
+              &lt;th&gt;点赞&lt;/th&gt;
+              &lt;th&gt;评论&lt;/th&gt;
+              &lt;th&gt;分享&lt;/th&gt;
+              &lt;th&gt;发布时间&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;学习方法短视频示例A&lt;/a&gt;&lt;/td&gt;&lt;td&gt;4220&lt;/td&gt;&lt;td&gt;120&lt;/td&gt;&lt;td&gt;980&lt;/td&gt;&lt;td&gt;04-01 09:00&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;课程方法讲解示例B&lt;/a&gt;&lt;/td&gt;&lt;td&gt;4032&lt;/td&gt;&lt;td&gt;115&lt;/td&gt;&lt;td&gt;938&lt;/td&gt;&lt;td&gt;04-02 10:09&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;高频问题答疑示例C&lt;/a&gt;&lt;/td&gt;&lt;td&gt;3844&lt;/td&gt;&lt;td&gt;110&lt;/td&gt;&lt;td&gt;896&lt;/td&gt;&lt;td&gt;04-03 11:18&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;直播预热视频示例D&lt;/a&gt;&lt;/td&gt;&lt;td&gt;3656&lt;/td&gt;&lt;td&gt;105&lt;/td&gt;&lt;td&gt;854&lt;/td&gt;&lt;td&gt;04-04 12:27&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号E&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;学习路径拆解示例E&lt;/a&gt;&lt;/td&gt;&lt;td&gt;3468&lt;/td&gt;&lt;td&gt;100&lt;/td&gt;&lt;td&gt;812&lt;/td&gt;&lt;td&gt;04-05 13:36&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号F&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;资料使用说明示例F&lt;/a&gt;&lt;/td&gt;&lt;td&gt;3280&lt;/td&gt;&lt;td&gt;95&lt;/td&gt;&lt;td&gt;770&lt;/td&gt;&lt;td&gt;04-06 14:45&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号G&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;知识点讲解示例G&lt;/a&gt;&lt;/td&gt;&lt;td&gt;3092&lt;/td&gt;&lt;td&gt;90&lt;/td&gt;&lt;td&gt;728&lt;/td&gt;&lt;td&gt;04-07 15:54&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号H&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;案例复盘短视频H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2904&lt;/td&gt;&lt;td&gt;85&lt;/td&gt;&lt;td&gt;686&lt;/td&gt;&lt;td&gt;04-01 16:03&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号I&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阶段规划内容I&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2716&lt;/td&gt;&lt;td&gt;80&lt;/td&gt;&lt;td&gt;644&lt;/td&gt;&lt;td&gt;04-02 17:12&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号J&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;选题测试内容J&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2528&lt;/td&gt;&lt;td&gt;75&lt;/td&gt;&lt;td&gt;602&lt;/td&gt;&lt;td&gt;04-03 18:21&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号K&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;课程亮点说明K&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2340&lt;/td&gt;&lt;td&gt;70&lt;/td&gt;&lt;td&gt;560&lt;/td&gt;&lt;td&gt;04-04 19:30&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号L&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;用户问题回应L&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2152&lt;/td&gt;&lt;td&gt;65&lt;/td&gt;&lt;td&gt;518&lt;/td&gt;&lt;td&gt;04-05 20:39&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;内容账号M&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;复习方法内容M&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1964&lt;/td&gt;&lt;td&gt;60&lt;/td&gt;&lt;td&gt;476&lt;/td&gt;&lt;td&gt;04-06 09:48&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;课程账号N&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;入门方法内容N&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1776&lt;/td&gt;&lt;td&gt;55&lt;/td&gt;&lt;td&gt;434&lt;/td&gt;&lt;td&gt;04-07 10:57&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;图书账号O&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;直播切片内容O&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1588&lt;/td&gt;&lt;td&gt;50&lt;/td&gt;&lt;td&gt;392&lt;/td&gt;&lt;td&gt;04-01 11:06&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;直播账号P&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;商品说明内容P&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1400&lt;/td&gt;&lt;td&gt;45&lt;/td&gt;&lt;td&gt;350&lt;/td&gt;&lt;td&gt;04-02 12:15&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;内容测试样本Q&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1212&lt;/td&gt;&lt;td&gt;40&lt;/td&gt;&lt;td&gt;308&lt;/td&gt;&lt;td&gt;04-03 13:24&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;话题互动内容R&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1024&lt;/td&gt;&lt;td&gt;35&lt;/td&gt;&lt;td&gt;266&lt;/td&gt;&lt;td&gt;04-04 14:33&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;基础讲解内容S&lt;/a&gt;&lt;/td&gt;&lt;td&gt;836&lt;/td&gt;&lt;td&gt;30&lt;/td&gt;&lt;td&gt;224&lt;/td&gt;&lt;td&gt;04-05 15:42&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;video-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;学习建议内容T&lt;/a&gt;&lt;/td&gt;&lt;td&gt;648&lt;/td&gt;&lt;td&gt;25&lt;/td&gt;&lt;td&gt;182&lt;/td&gt;&lt;td&gt;04-06 16:51&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;section&quot; id=&quot;goods&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;新上架商品&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;这是商品动作观察模块。重点看哪些作者在积极上新，以及哪些新品已经开始出量；它回答“最近上了什么”，不替代后面的热销商品结果验证模块。&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;mini-card card&quot;&gt;
+        &lt;h3&gt;关键观察&lt;/h3&gt;
+        &lt;ul&gt;
+          &lt;li&gt;头部新品明显集中在 &lt;strong&gt;对标账号A&lt;/strong&gt;，且出现多条高量级商品；本轮图表与表格均已补齐完整 20 条商品明细。&lt;/li&gt;
+          &lt;li&gt;本轮图表与表格都已补齐到完整 20 条商品明细；v10 改为直接使用页面提供的&lt;strong&gt;销售额真实值口径（`total_amount_text_cmm_ind`）&lt;/strong&gt;绘图，并统一换算成 w 显示，避免区间中位值带来的单位误判。&lt;/li&gt;
+          &lt;li&gt;当前先不连线，避免把商品横向对比误读成时间趋势。&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-card&quot;&gt;
+        &lt;iframe class=&quot;chart-frame secondary&quot; srcdoc=&quot;&amp;lt;!doctype html&amp;gt;&amp;lt;html lang=&amp;quot;zh-CN&amp;quot;&amp;gt;&amp;lt;head&amp;gt;&amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;/&amp;gt;&amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width,initial-scale=1&amp;quot;/&amp;gt;&amp;lt;script src=&amp;quot;https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;&amp;lt;style&amp;gt;html,body,#c{margin:0;width:100%;height:100%;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',sans-serif;}&amp;lt;/style&amp;gt;&amp;lt;/head&amp;gt;&amp;lt;body&amp;gt;&amp;lt;div id=&amp;quot;c&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;script&amp;gt;
+const chart=echarts.init(document.getElementById('c'));
+const cats=[&amp;quot;对标账号A｜阅读训练课程A&amp;quot;,&amp;quot;对标账号B｜语法专项课B&amp;quot;,&amp;quot;对标账号C｜口语陪跑课C&amp;quot;,&amp;quot;对标账号D｜自然拼读资料D&amp;quot;,&amp;quot;对标账号E｜写作提升课E&amp;quot;,&amp;quot;对标账号F｜词汇记忆包F&amp;quot;,&amp;quot;对标账号G｜听说读写组合课G&amp;quot;,&amp;quot;对标账号H｜阶段复习资料H&amp;quot;,&amp;quot;重点账号I｜直播体验课I&amp;quot;,&amp;quot;重点账号J｜专项训练营J&amp;quot;,&amp;quot;对标账号K｜课程讲义包K&amp;quot;,&amp;quot;对标账号L｜学习方法资料L&amp;quot;,&amp;quot;内容账号M｜阅读打卡计划M&amp;quot;,&amp;quot;课程账号N｜启蒙训练包N&amp;quot;,&amp;quot;图书账号O｜能力提升课O&amp;quot;,&amp;quot;直播账号P｜复盘资料P&amp;quot;,&amp;quot;对标账号A｜知识点训练包Q&amp;quot;,&amp;quot;对标账号B｜专题讲解课R&amp;quot;,&amp;quot;对标账号C｜基础巩固资料S&amp;quot;,&amp;quot;对标账号D｜综合练习包T&amp;quot;];
+const bars=[54.2,51.9,49.6,47.3,45,42.7,40.4,38.1,35.8,33.5,31.2,28.9,26.6,24.3,22,19.7,17.4,15.1,12.8,10.5];
+const dots=[310,297.5,285,272.5,260,247.5,235,222.5,210,197.5,185,172.5,160,147.5,135,122.5,110,97.5,85,72.5];
+const volTexts=[&amp;quot;5000~7500&amp;quot;,&amp;quot;5000~7500&amp;quot;,&amp;quot;2500~5000&amp;quot;,&amp;quot;2500~5000&amp;quot;,&amp;quot;1000~2500&amp;quot;,&amp;quot;1000~2500&amp;quot;,&amp;quot;750~1000&amp;quot;,&amp;quot;750~1000&amp;quot;,&amp;quot;500~750&amp;quot;,&amp;quot;500~750&amp;quot;,&amp;quot;250~500&amp;quot;,&amp;quot;250~500&amp;quot;,&amp;quot;100~250&amp;quot;,&amp;quot;100~250&amp;quot;,&amp;quot;75~100&amp;quot;,&amp;quot;75~100&amp;quot;,&amp;quot;50~75&amp;quot;,&amp;quot;50~75&amp;quot;,&amp;quot;25~50&amp;quot;,&amp;quot;25~50&amp;quot;];
+const volCmm=[310,297.5,285,272.5,260,247.5,235,222.5,210,197.5,185,172.5,160,147.5,135,122.5,110,97.5,85,72.5];
+chart.setOption({
+ animation:false,
+ title:{text:'新上架商品销售额分布（Top 20）', left:12, top:8, textStyle:{fontSize:16,fontWeight:600,color:'#24313f'}},
+ grid:{left:230,right:56,top:52,bottom:24},
+ tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, formatter:(ps)=&amp;gt;{ const idx=ps[0].dataIndex; const name=ps[0].name; const a=ps.find(x=&amp;gt;x.seriesName==='销售额（w）'); return name+'&amp;lt;br/&amp;gt;'+(a?('销售额：'+a.value.toFixed(1)+'w&amp;lt;br/&amp;gt;'):'')+'销量区间：'+volTexts[idx]+'&amp;lt;br/&amp;gt;平台换算数值：'+volCmm[idx]; }},
+ legend:{top:10,right:16},
+ xAxis:[{type:'value', name:'销售额（w）', axisLabel:{color:'#617181', formatter:(v)=&amp;gt;(Math.round(v*10)/10).toFixed(1)+'w'}, splitLine:{lineStyle:{color:'#edf1f5'}}},{type:'value', name:'平台换算销量值', position:'top', show:false}],
+ yAxis:{type:'category', data:cats, axisLabel:{color:'#24313f', width:210, overflow:'truncate'}},
+ series:[
+  {name:'销售额（w）', type:'bar', xAxisIndex:0, data:bars, barMaxWidth:22, itemStyle:{borderRadius:[0,8,8,0], color:new echarts.graphic.LinearGradient(1,0,0,0,[{offset:0,color:'#5f7892'},{offset:1,color:'#9ab2c9'}])}, emphasis:{itemStyle:{color:new echarts.graphic.LinearGradient(1,0,0,0,[{offset:0,color:'#ddcfb0'},{offset:1,color:'#efe5d0'}]), shadowBlur:14, shadowColor:'rgba(60,70,85,.12)'}}, label:{show:true, position:'right', color:'#4b5b6a', formatter:(p)=&amp;gt;(Math.round(p.value*10)/10).toFixed(1)+'w'}},
+  {name:'销量', type:'scatter', xAxisIndex:1, data:dots.map((d,i)=&amp;gt;[d,i]), symbolSize:8, itemStyle:{color:'#d4c29f'}, emphasis:{scale:true}}
+ ]
+}); window.addEventListener('resize',()=&amp;gt;chart.resize());
+&amp;lt;/script&amp;gt;&amp;lt;/body&amp;gt;&amp;lt;/html&amp;gt;&quot;&gt;&lt;/iframe&gt;
+              &lt;/div&gt;
+      &lt;div class=&quot;table-toolbar&quot;&gt;
+        &lt;button id=&quot;toggleGoodsRowsBtn&quot; class=&quot;control-btn&quot;&gt;展开完整表格&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-wrap&quot;&gt;
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;达人&lt;/th&gt;
+              &lt;th&gt;商品标题&lt;/th&gt;
+              &lt;th&gt;近7天销售额&lt;/th&gt;
+              &lt;th&gt;销售额（真实值）&lt;/th&gt;
+              &lt;th&gt;近7天销量&lt;/th&gt;
+              &lt;th&gt;上架时间&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阅读训练课程A&lt;/a&gt;&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;54.2w&lt;/td&gt;&lt;td&gt;5000~7500&lt;/td&gt;&lt;td&gt;04-01 08:00&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;语法专项课B&lt;/a&gt;&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;51.9w&lt;/td&gt;&lt;td&gt;5000~7500&lt;/td&gt;&lt;td&gt;04-02 09:05&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;口语陪跑课C&lt;/a&gt;&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;49.6w&lt;/td&gt;&lt;td&gt;2500~5000&lt;/td&gt;&lt;td&gt;04-03 10:10&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;自然拼读资料D&lt;/a&gt;&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;47.3w&lt;/td&gt;&lt;td&gt;2500~5000&lt;/td&gt;&lt;td&gt;04-04 11:15&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号E&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;写作提升课E&lt;/a&gt;&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;45.0w&lt;/td&gt;&lt;td&gt;1000~2500&lt;/td&gt;&lt;td&gt;04-05 12:20&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号F&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;词汇记忆包F&lt;/a&gt;&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;42.7w&lt;/td&gt;&lt;td&gt;1000~2500&lt;/td&gt;&lt;td&gt;04-06 13:25&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号G&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;听说读写组合课G&lt;/a&gt;&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;40.4w&lt;/td&gt;&lt;td&gt;750~1000&lt;/td&gt;&lt;td&gt;04-07 14:30&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号H&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阶段复习资料H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;38.1w&lt;/td&gt;&lt;td&gt;750~1000&lt;/td&gt;&lt;td&gt;04-01 15:35&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号I&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;直播体验课I&lt;/a&gt;&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;35.8w&lt;/td&gt;&lt;td&gt;500~750&lt;/td&gt;&lt;td&gt;04-02 16:40&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号J&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;专项训练营J&lt;/a&gt;&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;33.5w&lt;/td&gt;&lt;td&gt;500~750&lt;/td&gt;&lt;td&gt;04-03 17:45&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号K&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;课程讲义包K&lt;/a&gt;&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;31.2w&lt;/td&gt;&lt;td&gt;250~500&lt;/td&gt;&lt;td&gt;04-04 18:50&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号L&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;学习方法资料L&lt;/a&gt;&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;28.9w&lt;/td&gt;&lt;td&gt;250~500&lt;/td&gt;&lt;td&gt;04-05 19:55&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;内容账号M&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阅读打卡计划M&lt;/a&gt;&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;26.6w&lt;/td&gt;&lt;td&gt;100~250&lt;/td&gt;&lt;td&gt;04-06 08:00&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;课程账号N&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;启蒙训练包N&lt;/a&gt;&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;24.3w&lt;/td&gt;&lt;td&gt;100~250&lt;/td&gt;&lt;td&gt;04-07 09:05&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;图书账号O&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;能力提升课O&lt;/a&gt;&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;22.0w&lt;/td&gt;&lt;td&gt;75~100&lt;/td&gt;&lt;td&gt;04-01 10:10&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;直播账号P&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;复盘资料P&lt;/a&gt;&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;19.7w&lt;/td&gt;&lt;td&gt;75~100&lt;/td&gt;&lt;td&gt;04-02 11:15&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;知识点训练包Q&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2.5w~5w&lt;/td&gt;&lt;td&gt;17.4w&lt;/td&gt;&lt;td&gt;50~75&lt;/td&gt;&lt;td&gt;04-03 12:20&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;专题讲解课R&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2.5w~5w&lt;/td&gt;&lt;td&gt;15.1w&lt;/td&gt;&lt;td&gt;50~75&lt;/td&gt;&lt;td&gt;04-04 13:25&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;基础巩固资料S&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;12.8w&lt;/td&gt;&lt;td&gt;25~50&lt;/td&gt;&lt;td&gt;04-05 14:30&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;goods-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;综合练习包T&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;10.5w&lt;/td&gt;&lt;td&gt;25~50&lt;/td&gt;&lt;td&gt;04-06 15:35&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;section&quot; id=&quot;deal&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;热销商品视频&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;这是结果验证模块。核心任务是回答“哪些商品真正跑出了结果”，用于验证前述内容 / 直播 / 上新动作最终转化成了什么商品表现。&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;mini-card card&quot;&gt;
+        &lt;h3&gt;关键观察&lt;/h3&gt;
+        &lt;ul&gt;
+          &lt;li&gt;热销结果原始 merged 数据共抓到 &lt;strong&gt;121 行&lt;/strong&gt;，当前表格已按销售额高低补齐完整结果，并保留默认前 5 条 + 展开查看。&lt;/li&gt;
+          &lt;li&gt;重点账号系中有 &lt;strong&gt;3 个达人为空结果&lt;/strong&gt;，更接近业务空集而非脚本失败。&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;table-wrap&quot;&gt;
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;达人&lt;/th&gt;
+              &lt;th&gt;商品标题&lt;/th&gt;
+              &lt;th&gt;销售额&lt;/th&gt;
+              &lt;th&gt;销量&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;词汇记忆包F&lt;/a&gt;&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;5000~7500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;听说读写组合课G&lt;/a&gt;&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;5000~7500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号E&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阶段复习资料H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;250w~500w&lt;/td&gt;&lt;td&gt;5000~7500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号F&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;直播体验课I&lt;/a&gt;&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;2500~5000&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号G&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;专项训练营J&lt;/a&gt;&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;2500~5000&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号H&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;课程讲义包K&lt;/a&gt;&lt;/td&gt;&lt;td&gt;100w~250w&lt;/td&gt;&lt;td&gt;2500~5000&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;重点账号I&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;学习方法资料L&lt;/a&gt;&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;1000~2500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;重点账号J&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阅读打卡计划M&lt;/a&gt;&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;1000~2500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号K&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;启蒙训练包N&lt;/a&gt;&lt;/td&gt;&lt;td&gt;75w~100w&lt;/td&gt;&lt;td&gt;1000~2500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;对标账号L&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;能力提升课O&lt;/a&gt;&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;750~1000&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;内容账号M&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;复盘资料P&lt;/a&gt;&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;750~1000&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;课程账号N&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;知识点训练包Q&lt;/a&gt;&lt;/td&gt;&lt;td&gt;50w~75w&lt;/td&gt;&lt;td&gt;750~1000&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;图书账号O&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;专题讲解课R&lt;/a&gt;&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;500~750&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;直播账号P&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;基础巩固资料S&lt;/a&gt;&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;500~750&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;综合练习包T&lt;/a&gt;&lt;/td&gt;&lt;td&gt;25w~50w&lt;/td&gt;&lt;td&gt;500~750&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阅读训练课程A&lt;/a&gt;&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;250~500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;语法专项课B&lt;/a&gt;&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;250~500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;口语陪跑课C&lt;/a&gt;&lt;/td&gt;&lt;td&gt;10w~25w&lt;/td&gt;&lt;td&gt;250~500&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号E&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;自然拼读资料D&lt;/a&gt;&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;100~250&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号F&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;写作提升课E&lt;/a&gt;&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;100~250&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号G&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;词汇记忆包F&lt;/a&gt;&lt;/td&gt;&lt;td&gt;7.5w~10w&lt;/td&gt;&lt;td&gt;100~250&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号H&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;听说读写组合课G&lt;/a&gt;&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;75~100&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号I&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阶段复习资料H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;75~100&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;重点账号J&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;直播体验课I&lt;/a&gt;&lt;/td&gt;&lt;td&gt;5w~7.5w&lt;/td&gt;&lt;td&gt;75~100&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号K&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;专项训练营J&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2.5w~5w&lt;/td&gt;&lt;td&gt;50~75&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号L&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;课程讲义包K&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2.5w~5w&lt;/td&gt;&lt;td&gt;50~75&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;内容账号M&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;学习方法资料L&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2.5w~5w&lt;/td&gt;&lt;td&gt;50~75&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;课程账号N&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;阅读打卡计划M&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;25~50&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;图书账号O&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;启蒙训练包N&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;25~50&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;直播账号P&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;能力提升课O&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;25~50&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号A&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;复盘资料P&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;1~25&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号B&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;知识点训练包Q&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;1~25&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号C&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;专题讲解课R&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;1~25&lt;/td&gt;&lt;/tr&gt;
+&lt;tr class=&quot;deal-extra-row&quot; style=&quot;display:none;&quot;&gt;&lt;td&gt;对标账号D&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;#&quot; target=&quot;_blank&quot;&gt;基础巩固资料S&lt;/a&gt;&lt;/td&gt;&lt;td&gt;1w~2.5w&lt;/td&gt;&lt;td&gt;1~25&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;section&quot; id=&quot;analysis&quot;&gt;
+      &lt;div class=&quot;section-header&quot;&gt;
+        &lt;div&gt;
+          &lt;h2&gt;分析探索区&lt;/h2&gt;
+          &lt;div class=&quot;desc&quot;&gt;这里用于承接补充分析与页面优化记录，展示看板如何在不改变主阅读路径的情况下继续补充细节。当前这一轮在不覆盖旧版本的前提下，新建 v10，并继续把新上架商品模块修正到销售额单位、排序、时间字段都与原始数据一致。&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;a class=&quot;backtop&quot; href=&quot;#top&quot;&gt;返回顶部 ↑&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;grid-2&quot;&gt;
+        &lt;div class=&quot;card mini-card&quot;&gt;
+          &lt;h3&gt;v8c 主要变化&lt;/h3&gt;
+          &lt;ul&gt;
+            &lt;li&gt;v8d 新增三项收口：趋势表统一增红减绿并修正提示层、新发视频补齐同表展开、新上架商品升级为销售额柱 + 销量点图。&lt;/li&gt;
+            &lt;li&gt;新开直播与新上架商品改成默认前几条 + 右上角按钮展开完整表格。&lt;/li&gt;
+            &lt;li&gt;新发视频也纳入同样的默认前几条 + 同表展开完整表格机制。&lt;/li&gt;
+            &lt;li&gt;整页现在有统一的按钮文案、位置和“同表展开”交互逻辑。&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;card mini-card&quot;&gt;
+          &lt;h3&gt;后续建议&lt;/h3&gt;
+          &lt;ul&gt;
+            &lt;li&gt;下一轮可以继续补全 live / goods 表格的更多真实字段来源，减少“平台未提供”占位；当前先优先保证已完整抓取模块的图和表都同步补齐。&lt;/li&gt;
+            &lt;li&gt;也可以把视频模块也纳入同样的默认前几条 + 展开完整表格机制。&lt;/li&gt;
+            &lt;li&gt;如果准备继续做 v10 之后的版本，我建议优先把分析探索区 tabs 化，而不是继续往正文堆更多段落。&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;footer-box&quot; id=&quot;version&quot;&gt;
+      &lt;strong&gt;版本说明&lt;/strong&gt;&lt;br /&gt;
+      页面类型：Preview / v15&lt;br /&gt;
+      week_id：2026-W14&lt;br /&gt;
+      页面文件：&lt;code&gt;reports/video-course/2026-W14/preview/index-v15.html&lt;/code&gt;&lt;br /&gt;
+      趋势图文件：&lt;code&gt;reports/video-course/2026-W14/preview/v5-assets/trend-aggregate-v9.html&lt;/code&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;fab-wrap&quot;&gt;
+    &lt;button class=&quot;fab-btn&quot; id=&quot;fabBtn&quot;&gt;≡&lt;/button&gt;
+    &lt;div class=&quot;fab-panel&quot; id=&quot;fabPanel&quot;&gt;
+      &lt;a href=&quot;#author-sales&quot;&gt;近7日达人销售概况&lt;/a&gt;
+      &lt;a href=&quot;#trend&quot;&gt;近30天聚合销售趋势&lt;/a&gt;
+      &lt;a href=&quot;#live&quot;&gt;新开直播&lt;/a&gt;
+      &lt;a href=&quot;#video&quot;&gt;新发视频&lt;/a&gt;
+      &lt;a href=&quot;#goods&quot;&gt;新上架商品&lt;/a&gt;
+      &lt;a href=&quot;#deal&quot;&gt;热销商品视频&lt;/a&gt;
+      &lt;a href=&quot;#analysis&quot;&gt;分析探索区&lt;/a&gt;
+      &lt;a href=&quot;#version&quot;&gt;版本说明&lt;/a&gt;
+      &lt;a href=&quot;#top&quot;&gt;回到页首&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;trend-note-popup&quot; id=&quot;trendNotePopup&quot;&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+    const fabBtn = document.getElementById('fabBtn');
+    const fabPanel = document.getElementById('fabPanel');
+    fabBtn.addEventListener('click', () =&gt; fabPanel.classList.toggle('active'));
+    document.querySelectorAll('.fab-panel a').forEach(a =&gt; a.addEventListener('click', () =&gt; fabPanel.classList.remove('active')));
+
+    const setupToggle = (btnId, rowSelector) =&gt; {
+      const btn = document.getElementById(btnId);
+      const rows = document.querySelectorAll(rowSelector);
+      if (!btn) return;
+      let expanded = false;
+      btn.addEventListener('click', () =&gt; {
+        expanded = !expanded;
+        rows.forEach(r =&gt; r.style.display = expanded ? 'table-row' : 'none');
+        btn.textContent = expanded ? '收起完整表格' : '展开完整表格';
+      });
+    };
+
+    setupToggle('toggleAuthorRowsBtn', '.author-extra-row');
+    setupToggle('toggleLiveRowsBtn', '.live-extra-row');
+    setupToggle('toggleVideoRowsBtn', '.video-extra-row');
+    setupToggle('toggleGoodsRowsBtn', '.goods-extra-row');
+    setupToggle('toggleDealRowsBtn', '.deal-extra-row');
+
+    const trendNotePopup = document.getElementById('trendNotePopup');
+    const positionTrendPopup = (target) =&gt; {
+      if (!trendNotePopup || !target) return;
+      const rect = target.getBoundingClientRect();
+      const popupRect = trendNotePopup.getBoundingClientRect();
+      let left = rect.left + rect.width / 2 - popupRect.width / 2;
+      let top = rect.top - popupRect.height - 10;
+      left = Math.max(12, Math.min(left, window.innerWidth - popupRect.width - 12));
+      if (top &lt; 12) top = rect.bottom + 10;
+      trendNotePopup.style.left = `${left}px`;
+      trendNotePopup.style.top = `${top}px`;
+    };
+
+    document.querySelectorAll('.trend-note-dot').forEach(dot =&gt; {
+      const show = () =&gt; {
+        const note = dot.getAttribute('data-note');
+        if (!note || !trendNotePopup) return;
+        trendNotePopup.textContent = note;
+        trendNotePopup.style.display = 'block';
+        positionTrendPopup(dot);
+      };
+      const hide = () =&gt; {
+        if (!trendNotePopup) return;
+        trendNotePopup.style.display = 'none';
+      };
+      dot.addEventListener('mouseenter', show);
+      dot.addEventListener('mouseleave', hide);
+      dot.addEventListener('focus', show);
+      dot.addEventListener('blur', hide);
+      dot.addEventListener('click', (e) =&gt; {
+        e.preventDefault();
+        if (trendNotePopup &amp;&amp; trendNotePopup.style.display === 'block' &amp;&amp; trendNotePopup.textContent === dot.getAttribute('data-note')) {
+          hide();
+        } else {
+          show();
+        }
+      });
+    });
+
+    window.addEventListener('scroll', () =&gt; {
+      const activeDot = [...document.querySelectorAll('.trend-note-dot')].find(dot =&gt; trendNotePopup.style.display === 'block' &amp;&amp; trendNotePopup.textContent === dot.getAttribute('data-note'));
+      if (activeDot) positionTrendPopup(activeDot);
+    }, { passive: true });
+    window.addEventListener('resize', () =&gt; {
+      const activeDot = [...document.querySelectorAll('.trend-note-dot')].find(dot =&gt; trendNotePopup.style.display === 'block' &amp;&amp; trendNotePopup.textContent === dot.getAttribute('data-note'));
+      if (activeDot) positionTrendPopup(activeDot);
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+" title="蝉妈妈脱敏看板预览"></iframe>
+                </div>
+              </div>
+            </div>
+            <p class="result-note">该页面展示单个重点模块如何从一组数据扩展为可筛选、可复盘的分析视图。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="value">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">04 我的核心贡献是什么</div>
+          <h2>我的核心贡献是降低重复整理成本，并把公司想看的数据组织成可复用看板</h2>
+          <p class="section-lead">
+            我承担的不只是把数据搬出来，而是把业务想看的对象、周期、指标和对比方式重新组织，让周报更方便观察业绩变化、竞品动态和下一步计划方向。
+          </p>
+        </div>
+
+        <div class="value-strip">
+          <div class="value-card">
+            <span class="tag">效率</span>
+            <b>降低重复整理成本</b>
+            <span>把打开页面、筛选周期、复制数据、整理表格等机械动作沉淀为固定流程，减少每周重复投入。</span>
+          </div>
+          <div class="value-card">
+            <span class="tag green">定制</span>
+            <b>支持公司自定义关注重点</b>
+            <span>围绕公司实际关注的账号、商品、业务线和指标组织数据，不只停留在平台默认展示。</span>
+          </div>
+          <div class="value-card">
+            <span class="tag gold">对比</span>
+            <b>让横向和纵向比较更直观</b>
+            <span>把业务线、账号、商品和周期变化放进同一套看板结构，方便观察差异、波动和重点机会。</span>
+          </div>
+          <div class="value-card">
+            <span class="tag rose">复用</span>
+            <b>沉淀可继续复用的周报方法</b>
+            <span>把采集、整理、看板和推送串成闭环，后续新增模块或调整口径时可以在原结构上继续迭代。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="back-top" id="backTop" type="button" aria-label="返回顶部">↑</button>
+
+  <script>
+    const links = Array.from(document.querySelectorAll(".nav-link"));
+    const sections = links
+      .map((link) => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+    const progress = document.getElementById("progress");
+    const backTop = document.getElementById("backTop");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          links.forEach((link) => {
+            link.classList.toggle("is-active", link.getAttribute("href") === `#${entry.target.id}`);
+          });
+        });
+      },
+      { rootMargin: "-42% 0px -52% 0px", threshold: 0 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    function updateScrollState() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      progress.style.width = `${pct}%`;
+      backTop.classList.toggle("show", scrollTop > 520);
+    }
+
+    window.addEventListener("scroll", updateScrollState, { passive: true });
+    updateScrollState();
+
+    backTop.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    const scaleViewport = document.getElementById("dashboardScaleViewport");
+    const scaleStage = document.getElementById("dashboardScaleStage");
+    const dashboardBaseWidth = 1360;
+    const dashboardPreviewFrame = document.getElementById("embedded-dashboard-preview");
+
+    function updateDashboardScale() {
+      if (!scaleViewport || !scaleStage) return;
+      const availableWidth = scaleViewport.clientWidth || dashboardBaseWidth;
+      const scale = Math.min(1, availableWidth / dashboardBaseWidth);
+      scaleStage.style.transform = "none";
+      scaleStage.style.marginLeft = "0px";
+      const baseHeight = scaleStage.scrollHeight || scaleStage.offsetHeight || 0;
+      scaleStage.style.transform = `scale(${scale})`;
+      scaleStage.style.marginLeft = `${Math.max(0, (availableWidth - dashboardBaseWidth * scale) / 2)}px`;
+      scaleViewport.style.height = `${Math.ceil(baseHeight * scale)}px`;
+    }
+
+    if (scaleViewport && scaleStage) {
+      window.addEventListener("resize", updateDashboardScale, { passive: true });
+      window.addEventListener("load", updateDashboardScale, { passive: true });
+      dashboardPreviewFrame?.addEventListener("load", () => {
+        requestAnimationFrame(updateDashboardScale);
+        setTimeout(updateDashboardScale, 120);
+      }, { passive: true });
+      requestAnimationFrame(updateDashboardScale);
+      setTimeout(updateDashboardScale, 120);
+      setTimeout(updateDashboardScale, 520);
+      updateDashboardScale();
+    }
+  </script>
+</body>
+</html>
+
+
+
+
